@@ -16,6 +16,7 @@ export default function StatusBadge({
       return "default";
 
     case "pending":
+    case "in progress":
       return "secondary";
 
     case "rejected":
