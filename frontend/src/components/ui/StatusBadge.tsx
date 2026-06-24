@@ -8,22 +8,24 @@ export default function StatusBadge({
   status,
 }: StatusBadgeProps) {
   const getVariant = () => {
-    switch (status.toLowerCase()) {
-      case "completed":
-      case "verified":
-      case "approved":
-        return "default";
+  switch (status.toLowerCase()) {
+    case "completed":
+    case "verified":
+    case "approved":
+    case "active":
+      return "default";
 
-      case "pending":
-        return "secondary";
+    case "pending":
+      return "secondary";
 
-      case "rejected":
-        return "destructive";
+    case "rejected":
+    case "inactive":
+      return "destructive";
 
-      default:
-        return "outline";
-    }
-  };
+    default:
+      return "outline";
+  }
+};
 
   return (
     <Badge variant={getVariant()}>
