@@ -1,43 +1,62 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { MoreHorizontal, CalendarDays } from "lucide-react";
 
 import StatusBadge from "@/components/ui/StatusBadge";
+import { formatCurrency } from "@/lib/format";
 
-interface Job {
+type Job = {
   id: string;
   client: string;
   assignedStaff: string;
-  amount: string;
+  dueDate: string;
+  amount: number;
   status: string;
-}
+};
 
-interface JobsTableProps {
+type JobsTableProps = {
   jobs: Job[];
-}
+};
 
-export default function JobsTable({
-  jobs,
-}: JobsTableProps) {
+export default function JobsTable({ jobs }: JobsTableProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>All Jobs</CardTitle>
+    <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
+      <CardHeader className="border-b border-[#F1F5F9] pb-5">
+        <CardTitle className="text-xl font-semibold text-[#0F172A]">
+          All Jobs
+        </CardTitle>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-3 text-left">Job ID</th>
-                <th className="py-3 text-left">Client</th>
-                <th className="py-3 text-left">Assigned Staff</th>
-                <th className="py-3 text-left">Amount</th>
-                <th className="py-3 text-left">Status</th>
+          <table className="w-full">
+            <thead className="bg-[#FAFBFC]">
+              <tr className="border-b border-[#F1F5F9]">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Job ID
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Client
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Assigned Staff
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Due Date
+                </th>
+
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Amount
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Status
+                </th>
+
+                <th className="w-14"></th>
               </tr>
             </thead>
 
@@ -45,22 +64,43 @@ export default function JobsTable({
               {jobs.map((job) => (
                 <tr
                   key={job.id}
-                  className="border-b hover:bg-muted/40"
+                  className="border-b border-[#F8FAFC] transition hover:bg-[#FFF8F3]"
                 >
-                  <td className="py-4 font-medium">
+                  <td className="px-6 py-5 font-semibold text-[#0F172A]">
                     {job.id}
                   </td>
 
-                  <td>{job.client}</td>
+                  <td className="px-6 py-5">{job.client}</td>
 
-                  <td>{job.assignedStaff}</td>
+                  <td className="px-6 py-5 text-[#475569]">
+                    {job.assignedStaff}
+                  </td>
 
-                  <td>{job.amount}</td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2 text-[#64748B]">
+                      <CalendarDays size={15} />
 
-                  <td>
-                    <StatusBadge
-                      status={job.status}
-                    />
+                      {job.dueDate}
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 text-right font-semibold text-[#0F172A]">
+                    {formatCurrency(job.amount)}
+                  </td>
+
+                  <td className="px-6 py-5 text-center">
+                    <StatusBadge status={job.status} />
+                  </td>
+
+                  <td className="px-4 py-5">
+                    <button
+                      type="button"
+                      aria-label={`More actions for ${job.id}`}
+                      title="More actions"
+                      className="rounded-lg p-2 transition hover:bg-[#FFF2E8]"
+                    >
+                      <MoreHorizontal size={18} className="text-[#64748B]" />
+                    </button>
                   </td>
                 </tr>
               ))}
