@@ -1,8 +1,30 @@
-export const recentActivities = [
-  "John Smith assigned to JOB-101",
-  "Payment PAY-003 verified",
-  "New client registered",
-  "Vehicle Branding job completed",
+import type { Activity } from "@/components/dashboard/RecentActivity";
+
+export const recentActivities: Activity[] = [
+  {
+    id: 1,
+    title: "John Smith assigned to JOB-101",
+    time: "5 minutes ago",
+    type: "job",
+  },
+  {
+    id: 2,
+    title: "Payment PAY-003 verified",
+    time: "18 minutes ago",
+    type: "payment",
+  },
+  {
+    id: 3,
+    title: "New client registered",
+    time: "1 hour ago",
+    type: "client",
+  },
+  {
+    id: 4,
+    title: "Vehicle branding job completed",
+    time: "2 hours ago",
+    type: "delivery",
+  },
 ];
 
 export const recentJobs = [

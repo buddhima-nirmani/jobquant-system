@@ -8,16 +8,24 @@ export default function PageHeader({
   description,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6">
-      <h1 className="text-4xl font-bold">
+    <div className="mb-2">
+
+      <h1 className="text-[58px] font-bold leading-none tracking-[-0.03em] text-[#0F172A]">
+
         {title}
+
       </h1>
 
       {description && (
-        <p className="text-muted-foreground mt-1">
+
+        <p className="mt-3 text-xl text-[#64748B]">
+
           {description}
+
         </p>
+
       )}
+
     </div>
   );
 }

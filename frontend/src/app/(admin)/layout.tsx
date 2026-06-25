@@ -7,14 +7,20 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-[#FAF8F4]">
+      {/* Fixed Sidebar */}
       <Sidebar role="admin" />
 
-      <div className="flex-1 flex flex-col">
+      {/* Main Content */}
+      <div className="ml-[240px] flex min-h-screen flex-1 flex-col">
+        {/* Navbar spans the full width of the content area */}
         <Navbar />
 
-        <main className="flex-1 p-6 bg-gray-100">
-          {children}
+        {/* Page Content */}
+        <main className="flex-1 bg-[#FAF8F4]">
+          <div className="px-10 py-10">
+            {children}
+          </div>
         </main>
       </div>
     </div>

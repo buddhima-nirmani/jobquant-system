@@ -1,30 +1,74 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ClipboardCheck,
+  CreditCard,
+  UserPlus,
+  Truck,
+} from "lucide-react";
 
-interface RecentActivityProps {
-  activities: string[];
-}
+export type Activity = {
+  id: number;
+  title: string;
+  time: string;
+  type: "job" | "payment" | "client" | "delivery";
+};
+
+type Props = {
+  activities: Activity[];
+};
+
+const icons = {
+  job: ClipboardCheck,
+  payment: CreditCard,
+  client: UserPlus,
+  delivery: Truck,
+};
 
 export default function RecentActivity({
   activities,
-}: RecentActivityProps) {
+}: Props) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-      </CardHeader>
+    <div className="rounded-2xl border border-[#EAEAEA] bg-white p-6 shadow-sm">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-[#0F172A]">
+            Recent Activity
+          </h3>
 
-      <CardContent>
-        <ul className="space-y-3">
-          {activities.map((activity, index) => (
-            <li
-              key={index}
-              className="text-sm"
+          <p className="mt-1 text-sm text-[#64748B]">
+            Latest actions in the system
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        {activities.map((activity) => {
+          const Icon = icons[activity.type];
+
+          return (
+            <div
+              key={activity.id}
+              className="flex items-start gap-4"
             >
-              • {activity}
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF2E8]">
+                <Icon
+                  size={18}
+                  className="text-[#FF6B00]"
+                />
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[#0F172A]">
+                  {activity.title}
+                </p>
+
+                <p className="mt-1 text-xs text-[#94A3B8]">
+                  {activity.time}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

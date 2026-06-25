@@ -1,7 +1,7 @@
 import PageHeader from "@/components/layouts/PageHeader";
 import StatCard from "@/components/cards/StatCard";
 import JobsTable from "@/components/tables/JobsTable";
-
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -56,8 +56,10 @@ export default function JobsPage() {
           className="max-w-md"
         />
 
-        <Button>
-          Create Job
+        <Button asChild>
+          <Link href="/admin/jobs/create">
+            Create Job
+          </Link>
         </Button>
       </div>
 

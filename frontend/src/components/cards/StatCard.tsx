@@ -13,19 +13,27 @@ export default function StatCard({
   icon: Icon,
 }: StatCardProps) {
   return (
-    <Card className="shadow-sm">
+    <Card className="group rounded-2xl border border-[#E9E9E9] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <CardContent className="flex items-center justify-between p-6">
-        <div>
-          <p className="text-sm text-muted-foreground">
+
+        <div className="space-y-3">
+
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#64748B]">
             {title}
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
+          <h2 className="text-[42px] font-bold leading-none text-slate-900">
             {value}
           </h2>
+
         </div>
 
-        <Icon className="h-8 w-8 text-orange-500" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF2E8] transition-all duration-300 group-hover:bg-[#FF6B00]">
+
+          <Icon className="h-6 w-6 text-[#FF6B00] transition-all duration-300 group-hover:text-white" />
+
+        </div>
+
       </CardContent>
     </Card>
   );

@@ -1,15 +1,14 @@
-import StatCard from "@/components/cards/StatCard";
 import PageHeader from "@/components/layouts/PageHeader";
-
+import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 
 import {
-  Briefcase,
+  ClipboardList,
   Users,
-  UserCog,
-  CreditCard,
+  UserRoundCog,
+  WalletCards,
 } from "lucide-react";
 
 import {
@@ -19,47 +18,63 @@ import {
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+
       <PageHeader
         title="Dashboard"
-        description="Welcome back to JobQuant"
+        description="Welcome back to JobQuant."
       />
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
+      {/* KPI Cards */}
+
+      <div className="grid grid-cols-4 gap-6">
+
+        <DashboardStatCard
           title="Total Jobs"
-          value={128}
-          icon={Briefcase}
+          value="128"
+          icon={ClipboardList}
         />
 
-        <StatCard
+        <DashboardStatCard
           title="Active Clients"
-          value={34}
+          value="34"
           icon={Users}
         />
 
-        <StatCard
+        <DashboardStatCard
           title="Staff Members"
-          value={12}
-          icon={UserCog}
+          value="12"
+          icon={UserRoundCog}
         />
 
-        <StatCard
+        <DashboardStatCard
           title="Pending Payments"
-          value={8}
-          icon={CreditCard}
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RecentActivity
-          activities={recentActivities}
+          value="8"
+          icon={WalletCards}
         />
 
-        <QuickActions />
       </div>
+
+      {/* Middle */}
+
+      <div className="grid grid-cols-12 gap-6">
+
+        <div className="col-span-8">
+          <RecentActivity
+            activities={recentActivities}
+          />
+        </div>
+
+        <div className="col-span-4">
+          <QuickActions />
+        </div>
+
+      </div>
+
+      {/* Bottom */}
 
       <RecentJobs jobs={recentJobs} />
+
     </div>
   );
 }

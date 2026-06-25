@@ -8,60 +8,64 @@ import { Button } from "@/components/ui/button";
 import { payments } from "@/data/payments";
 
 import {
-  DollarSign,
-  CreditCard,
-  Clock,
   Wallet,
+  BadgeCheck,
+  Clock3,
+  Landmark,
 } from "lucide-react";
 
 export default function PaymentsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+
       <PageHeader
         title="Payments"
         description="Manage client payments and payment verification."
       />
 
-      {/* Statistics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
         <StatCard
           title="Total Revenue"
-          value="LKR 2.4M"
-          icon={DollarSign}
+          value="LKR 2,400,000"
+          icon={Wallet}
         />
 
         <StatCard
           title="Verified Payments"
-          value={124}
-          icon={CreditCard}
+          value="124"
+          icon={BadgeCheck}
         />
 
         <StatCard
           title="Pending Payments"
-          value={12}
-          icon={Clock}
+          value="12"
+          icon={Clock3}
         />
 
         <StatCard
           title="This Month"
-          value="LKR 320K"
-          icon={Wallet}
+          value="LKR 320,000"
+          icon={Landmark}
         />
+
       </div>
 
-      {/* Search + Export */}
-      <div className="flex flex-col gap-4 md:flex-row">
+      <div className="flex items-center justify-between">
+
         <Input
           placeholder="Search payments..."
           className="max-w-md"
         />
 
         <Button variant="outline">
-          Export
+          Export Report
         </Button>
+
       </div>
 
       <PaymentsTable payments={payments} />
+
     </div>
   );
 }
