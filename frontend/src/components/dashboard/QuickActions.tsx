@@ -1,30 +1,31 @@
 import {
+  Briefcase,
+  CreditCard,
   Plus,
   Users,
-  CreditCard,
-  Briefcase,
 } from "lucide-react";
+import { typography } from "@/lib/typography";
 
 const actions = [
   {
     title: "Create Job",
-    description: "Add a new printing job",
+    description: "Create a new print job",
     icon: Plus,
   },
   {
     title: "Manage Clients",
-    description: "View client records",
+    description: "View and edit clients",
     icon: Users,
-  },
-  {
-    title: "Verify Payments",
-    description: "Approve client payments",
-    icon: CreditCard,
   },
   {
     title: "Manage Jobs",
     description: "Track active jobs",
     icon: Briefcase,
+  },
+  {
+    title: "Verify Payments",
+    description: "Approve payments",
+    icon: CreditCard,
   },
 ];
 
@@ -32,11 +33,11 @@ export default function QuickActions() {
   return (
     <div className="rounded-2xl border border-[#EAEAEA] bg-white p-6 shadow-sm">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0F172A]">
+        <h2 className={typography.sectionTitle}>
           Quick Actions
-        </h3>
+        </h2>
 
-        <p className="mt-1 text-sm text-[#64748B]">
+        <p className={typography.sectionSubtitle}>
           Frequently used shortcuts
         </p>
       </div>
@@ -48,24 +49,22 @@ export default function QuickActions() {
           return (
             <button
               key={action.title}
-              className="group flex items-start gap-3 rounded-xl border border-[#ECECEC] bg-white p-4 text-left transition-all duration-200 hover:border-[#FF6B00] hover:bg-[#FFF8F3] hover:shadow-md"
+              className="group flex flex-col items-start rounded-xl border border-[#ECECEC] bg-white p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:border-[#FF6B00] hover:shadow-md"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF2E8] transition-colors group-hover:bg-[#FF6B00]">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF2E8] transition-colors duration-200 group-hover:bg-[#FF6B00]">
                 <Icon
                   size={20}
-                  className="text-[#FF6B00] transition-colors group-hover:text-white"
+                  className="text-[#FF6B00] transition-colors duration-200 group-hover:text-white"
                 />
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-[#0F172A]">
-                  {action.title}
-                </p>
+              <h3 className={`${typography.body} font-semibold text-[#0F172A]`}>
+                {action.title}
+              </h3>
 
-                <p className="mt-1 text-xs leading-5 text-[#64748B]">
-                  {action.description}
-                </p>
-              </div>
+              <p className="mt-1 text-xs leading-5 text-[#64748B]">
+                {action.description}
+              </p>
             </button>
           );
         })}

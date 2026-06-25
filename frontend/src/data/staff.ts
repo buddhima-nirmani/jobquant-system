@@ -1,4 +1,4 @@
-export const staffMembers = [
+export const staff = [
   {
     id: 1,
     name: "John Smith",

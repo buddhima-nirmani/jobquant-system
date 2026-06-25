@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import StatusBadge from "@/components/ui/StatusBadge";
 
@@ -17,12 +12,10 @@ interface StaffMember {
 }
 
 interface StaffTableProps {
-  staffMembers: StaffMember[];
+  staff: StaffMember[];
 }
 
-export default function StaffTable({
-  staffMembers,
-}: StaffTableProps) {
+export default function StaffTable({ staff }: StaffTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -43,25 +36,18 @@ export default function StaffTable({
             </thead>
 
             <tbody>
-              {staffMembers.map((staff) => (
-                <tr
-                  key={staff.id}
-                  className="border-b hover:bg-muted/40"
-                >
-                  <td className="py-4 font-medium">
-                    {staff.name}
-                  </td>
+              {staff.map((member) => (
+                <tr key={member.id} className="border-b hover:bg-muted/40">
+                  <td className="py-4 font-medium">{member.name}</td>
 
-                  <td>{staff.role}</td>
+                  <td>{member.role}</td>
 
-                  <td>{staff.email}</td>
+                  <td>{member.email}</td>
 
-                  <td>{staff.assignedJobs}</td>
+                  <td>{member.assignedJobs}</td>
 
                   <td>
-                    <StatusBadge
-                      status={staff.status}
-                    />
+                    <StatusBadge status={member.status} />
                   </td>
                 </tr>
               ))}

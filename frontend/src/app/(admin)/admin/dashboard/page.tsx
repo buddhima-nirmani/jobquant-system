@@ -1,5 +1,6 @@
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
+import DashboardOverviewChart from "@/components/dashboard/DashboardOverviewChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentJobs from "@/components/dashboard/RecentJobs";
@@ -19,16 +20,13 @@ import {
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
-
       <PageHeader
-        title="Dashboard"
-        description="Welcome back to JobQuant."
+        title="Welcome Back, Buddhima!"
+        description="Thursday, May 2"
       />
 
-      {/* KPI Cards */}
-
-      <div className="grid grid-cols-4 gap-6">
-
+      KPI Cards
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
           title="Total Jobs"
           value="128"
@@ -52,29 +50,24 @@ export default function AdminDashboardPage() {
           value="8"
           icon={WalletCards}
         />
-
       </div>
 
-      {/* Middle */}
+      {/* Main Dashboard */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-6">
+          <DashboardOverviewChart />
 
-      <div className="grid grid-cols-12 gap-6">
-
-        <div className="col-span-8">
-          <RecentActivity
-            activities={recentActivities}
-          />
-        </div>
-
-        <div className="col-span-4">
           <QuickActions />
         </div>
 
+        <RecentActivity
+          activities={recentActivities}
+        />
       </div>
 
-      {/* Bottom */}
-
-      <RecentJobs jobs={recentJobs} />
-
+      <RecentJobs
+        jobs={recentJobs}
+      />
     </div>
   );
 }
