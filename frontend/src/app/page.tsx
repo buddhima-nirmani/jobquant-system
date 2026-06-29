@@ -1,9 +1,24 @@
+import LandingHeader from "@/components/landing/LandingHeader";
+import HeroSection from "@/components/landing/HeroSection";
+import FeaturesSection from "@/components/landing/FeaturesSection";
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import CTASection from "@/components/landing/CTASection";
+import LandingFooter from "@/components/landing/LandingFooter";
+
 export default function Home() {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <h1 className="text-3xl font-bold">
-        JobQuant System Running 🚀
-      </h1>
-    </div>
+    <main className="min-h-screen bg-[#FAF8F4]">
+      <LandingHeader />
+
+      <HeroSection />
+
+      <FeaturesSection />
+
+      <HowItWorksSection />
+
+      <CTASection />
+
+      <LandingFooter />
+    </main>
   );
 }
