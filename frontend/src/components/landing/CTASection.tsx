@@ -20,7 +20,7 @@ export default function CTASection() {
         <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/90">
           Access your orders, review design versions, upload payment
           confirmations and stay informed throughout every stage of
-          your printing journey with Hansi Graphics.
+          your printing journey with JobQuant.
         </p>
 
         <div className="mt-12 flex justify-center gap-4">

@@ -84,7 +84,7 @@ export default function LandingFooter() {
 
           <div>
             <h3 className="text-xl font-semibold text-[#0F172A]">
-              Connect With Hansi Graphics
+              Connect With Us
             </h3>
 
             <div className="mt-6 space-y-5">
