@@ -24,9 +24,7 @@ export default function JobsPage() {
       />
 
       {/* KPI Cards */}
-
       <div className="grid grid-cols-4 gap-6">
-
         <DashboardStatCard
           title="Total Jobs"
           value="128"
@@ -50,15 +48,12 @@ export default function JobsPage() {
           value="95"
           icon={CircleCheckBig}
         />
-
       </div>
 
       {/* Search */}
-
       <div className="flex items-center justify-between">
-
         <Input
-          placeholder="Search by Job ID, Client..."
+          placeholder="Search by Job ID, Job Name or Client..."
           className="h-11 w-[360px]"
         />
 
@@ -70,13 +65,10 @@ export default function JobsPage() {
             Create Job
           </Link>
         </Button>
-
       </div>
 
       {/* Table */}
-
       <JobsTable jobs={jobs} />
-
     </div>
   );
 }

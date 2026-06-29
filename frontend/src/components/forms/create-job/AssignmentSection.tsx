@@ -3,8 +3,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 
-import { Input } from "@/components/ui/input";
-
 import {
   Select,
   SelectContent,
@@ -13,44 +11,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { Input } from "@/components/ui/input";
+
 export default function AssignmentSection() {
   return (
-    <Card>
-      <CardContent className="p-6 space-y-6">
+    <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
+      <CardContent className="space-y-6 p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF2E8] font-semibold text-[#FF6B00]">
             03
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-[#0F172A]">
               Assignment
             </h3>
 
-            <p className="text-sm text-muted-foreground">
-              Owner and designer for this job.
+            <p className="text-sm text-[#64748B]">
+              Assign the job and record who created it.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Assigned Staff */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Designer
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Assigned Staff
             </label>
 
             <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Designer" />
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Select Staff Member" />
               </SelectTrigger>
 
               <SelectContent>
-                <SelectItem value="sara">
-                  Sara Khan
-                </SelectItem>
-
                 <SelectItem value="john">
                   John Smith
+                </SelectItem>
+
+                <SelectItem value="sarah">
+                  Sarah Lee
                 </SelectItem>
 
                 <SelectItem value="david">
@@ -60,14 +61,16 @@ export default function AssignmentSection() {
             </Select>
           </div>
 
+          {/* Created By */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
               Created By
             </label>
 
             <Input
-              value="Admin User"
+              value="Buddhima (Administrator)"
               readOnly
+              className="h-11 bg-[#F8FAFC]"
             />
           </div>
         </div>

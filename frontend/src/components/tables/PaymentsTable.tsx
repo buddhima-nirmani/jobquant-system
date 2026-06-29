@@ -7,37 +7,60 @@ import {
 
 import StatusBadge from "@/components/ui/StatusBadge";
 
-interface Payment {
+import {
+  CalendarDays,
+  MoreHorizontal,
+} from "lucide-react";
+
+type Payment = {
   id: string;
   jobId: string;
-  amount: string;
+  amount: number;
   status: string;
   uploaded: string;
-}
+};
 
-interface PaymentsTableProps {
+type PaymentsTableProps = {
   payments: Payment[];
-}
+};
 
 export default function PaymentsTable({
   payments,
 }: PaymentsTableProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>All Payments</CardTitle>
+    <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
+      <CardHeader className="border-b border-[#F1F5F9] pb-5">
+        <CardTitle className="text-xl font-semibold text-[#0F172A]">
+          All Payments
+        </CardTitle>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-3 text-left">Payment ID</th>
-                <th className="py-3 text-left">Job ID</th>
-                <th className="py-3 text-left">Amount</th>
-                <th className="py-3 text-left">Status</th>
-                <th className="py-3 text-left">Uploaded</th>
+          <table className="w-full">
+            <thead className="bg-[#FAFBFC]">
+              <tr className="border-b border-[#F1F5F9]">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Payment ID
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Job ID
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Amount
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Status
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                  Uploaded
+                </th>
+
+                <th className="w-14"></th>
               </tr>
             </thead>
 
@@ -45,23 +68,57 @@ export default function PaymentsTable({
               {payments.map((payment) => (
                 <tr
                   key={payment.id}
-                  className="border-b hover:bg-muted/40"
+                  className="border-b border-[#F8FAFC] transition hover:bg-[#FFF8F3]"
                 >
-                  <td className="py-4 font-medium">
+                  <td className="px-6 py-5 font-semibold text-[#FF6B00]">
                     {payment.id}
                   </td>
 
-                  <td>{payment.jobId}</td>
+                  <td className="px-6 py-5 font-medium text-[#0F172A]">
+                    {payment.jobId}
+                  </td>
 
-                  <td>{payment.amount}</td>
+                  <td className="px-6 py-5">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+                        LKR
+                      </span>
 
-                  <td>
+                      <span className="text-lg font-bold text-[#0F172A]">
+                        {payment.amount.toLocaleString()}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 text-center">
                     <StatusBadge
                       status={payment.status}
                     />
                   </td>
 
-                  <td>{payment.uploaded}</td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2 text-[#64748B]">
+                      <CalendarDays
+                        size={15}
+                      />
+
+                      {payment.uploaded}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-5">
+                    <button
+                      type="button"
+                      aria-label={`More actions for ${payment.id}`}
+                      title="More actions"
+                      className="rounded-lg p-2 transition hover:bg-[#FFF2E8]"
+                    >
+                      <MoreHorizontal
+                        size={18}
+                        className="text-[#64748B]"
+                      />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

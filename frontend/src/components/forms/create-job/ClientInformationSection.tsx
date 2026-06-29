@@ -5,89 +5,60 @@ import {
 
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 export default function ClientInformationSection() {
   return (
-    <Card>
-      <CardContent className="p-6 space-y-6">
+    <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
+      <CardContent className="space-y-6 p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF2E8] font-semibold text-[#FF6B00]">
             02
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-[#0F172A]">
               Client Information
             </h3>
 
-            <p className="text-sm text-muted-foreground">
-              Selecting a client auto-fills saved details.
+            <p className="text-sm text-[#64748B]">
+              Enter client details.
             </p>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Select Client
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Client Name
             </label>
 
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Client" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="northwind">
-                  Northwind Cafe Co.
-                </SelectItem>
-
-                <SelectItem value="abc">
-                  ABC Company
-                </SelectItem>
-
-                <SelectItem value="xyz">
-                  XYZ Printers
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Input placeholder="John Perera" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Client / Company Name
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Company Name (Optional)
             </label>
 
-            <Input
-              placeholder="Northwind Cafe Co."
-            />
+            <Input placeholder="ABC Company" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
               Email Address
             </label>
 
             <Input
-              placeholder="orders@northwindcafe.com"
+              type="email"
+              placeholder="john@email.com"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
               Contact Number
             </label>
 
-            <Input
-              placeholder="+94 77 123 4567"
-            />
+            <Input placeholder="+94 77 123 4567" />
           </div>
         </div>
       </CardContent>

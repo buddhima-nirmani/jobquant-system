@@ -1,16 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { MoreHorizontal, CalendarDays } from "lucide-react";
 
 import StatusBadge from "@/components/ui/StatusBadge";
 import { formatCurrency } from "@/lib/format";
+import { typography } from "@/lib/typography";
 
 type Job = {
   id: string;
+  title: string;
   client: string;
   assignedStaff: string;
   dueDate: string;
   amount: number;
+  priority: string;
   status: string;
 };
 
@@ -22,7 +24,7 @@ export default function JobsTable({ jobs }: JobsTableProps) {
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardHeader className="border-b border-[#F1F5F9] pb-5">
-        <CardTitle className="text-xl font-semibold text-[#0F172A]">
+        <CardTitle className={typography.sectionTitle}>
           All Jobs
         </CardTitle>
       </CardHeader>
@@ -33,7 +35,7 @@ export default function JobsTable({ jobs }: JobsTableProps) {
             <thead className="bg-[#FAFBFC]">
               <tr className="border-b border-[#F1F5F9]">
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                  Job ID
+                  Job
                 </th>
 
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
@@ -66,11 +68,19 @@ export default function JobsTable({ jobs }: JobsTableProps) {
                   key={job.id}
                   className="border-b border-[#F8FAFC] transition hover:bg-[#FFF8F3]"
                 >
-                  <td className="px-6 py-5 font-semibold text-[#0F172A]">
-                    {job.id}
+                  <td className="px-6 py-5">
+                    <p className="text-sm font-semibold text-[#0F172A]">
+                      {job.id}
+                    </p>
+
+                    <p className="mt-1 text-[15px] font-medium text-[#0F172A]">
+                      {job.title}
+                    </p>
                   </td>
 
-                  <td className="px-6 py-5">{job.client}</td>
+                  <td className="px-6 py-5">
+                    {job.client}
+                  </td>
 
                   <td className="px-6 py-5 text-[#475569]">
                     {job.assignedStaff}
@@ -79,7 +89,6 @@ export default function JobsTable({ jobs }: JobsTableProps) {
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-2 text-[#64748B]">
                       <CalendarDays size={15} />
-
                       {job.dueDate}
                     </div>
                   </td>
@@ -96,10 +105,12 @@ export default function JobsTable({ jobs }: JobsTableProps) {
                     <button
                       type="button"
                       aria-label={`More actions for ${job.id}`}
-                      title="More actions"
                       className="rounded-lg p-2 transition hover:bg-[#FFF2E8]"
                     >
-                      <MoreHorizontal size={18} className="text-[#64748B]" />
+                      <MoreHorizontal
+                        size={18}
+                        className="text-[#64748B]"
+                      />
                     </button>
                   </td>
                 </tr>

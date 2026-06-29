@@ -3,7 +3,7 @@ import type { Activity } from "@/components/dashboard/RecentActivity";
 export const recentActivities: Activity[] = [
   {
     id: 1,
-    title: "John Smith assigned to JOB-101",
+    title: "John Smith assigned to Vehicle Branding - Toyota Hilux",
     time: "5 minutes ago",
     type: "job",
   },
@@ -21,7 +21,7 @@ export const recentActivities: Activity[] = [
   },
   {
     id: 4,
-    title: "Vehicle branding job completed",
+    title: "Corporate Office Signage completed",
     time: "2 hours ago",
     type: "delivery",
   },
@@ -29,17 +29,20 @@ export const recentActivities: Activity[] = [
 
 export const recentJobs = [
   {
-    id: "JOB-101",
+    id: "JQ-101",
+    title: "Vehicle Branding - Toyota Hilux",
     client: "ABC Company",
     status: "Pending",
   },
   {
-    id: "JOB-102",
+    id: "JQ-102",
+    title: "Outdoor LED Billboard Installation",
     client: "XYZ Printers",
     status: "In Progress",
   },
   {
-    id: "JOB-103",
+    id: "JQ-103",
+    title: "Corporate Office Signage",
     client: "Green Holdings",
     status: "Completed",
   },

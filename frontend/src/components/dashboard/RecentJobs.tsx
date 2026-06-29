@@ -3,6 +3,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 
 interface Job {
   id: string;
+  title: string;
   client: string;
   status: string;
 }
@@ -39,8 +40,18 @@ export default function RecentJobs({
             className="flex items-center justify-between px-6 py-5 transition-colors hover:bg-[#FAFAFA]"
           >
             <div>
-              <p className={`${typography.body} font-semibold text-[#0F172A]`}>
-                {job.id}
+              <div className="flex items-center gap-3">
+                <p className={`${typography.body} font-semibold text-[#0F172A]`}>
+                  {job.id}
+                </p>
+
+                <span className="rounded-full bg-[#FFF2E8] px-2 py-1 text-[11px] font-medium text-[#FF6B00]">
+                  Active
+                </span>
+              </div>
+
+              <p className="mt-2 text-[15px] font-medium text-[#0F172A]">
+                {job.title}
               </p>
 
               <p className="mt-1 text-sm text-[#64748B]">

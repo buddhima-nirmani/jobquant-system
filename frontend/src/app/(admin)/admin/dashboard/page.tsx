@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
         description="Thursday, May 2"
       />
 
-      KPI Cards
+      {/* KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
           title="Total Jobs"

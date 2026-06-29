@@ -1,22 +1,22 @@
 export const payments = [
   {
     id: "PAY-001",
-    jobId: "JOB-101",
-    amount: "LKR 35,000",
+    jobId: "JQ-101",
+    amount: 35000,
     status: "Verified",
     uploaded: "May 04, 2026",
   },
   {
     id: "PAY-002",
-    jobId: "JOB-102",
-    amount: "LKR 48,500",
+    jobId: "JQ-102",
+    amount: 48500,
     status: "Pending",
     uploaded: "May 12, 2026",
   },
   {
     id: "PAY-003",
-    jobId: "JOB-103",
-    amount: "LKR 22,000",
+    jobId: "JQ-103",
+    amount: 22000,
     status: "Rejected",
     uploaded: "May 15, 2026",
   },

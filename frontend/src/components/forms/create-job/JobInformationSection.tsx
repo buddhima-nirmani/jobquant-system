@@ -7,47 +7,51 @@ import { Input } from "@/components/ui/input";
 
 export default function JobInformationSection() {
   return (
-    <Card>
-      <CardContent className="p-6 space-y-6">
+    <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
+      <CardContent className="space-y-6 p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF2E8] font-semibold text-[#FF6B00]">
             01
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-[#0F172A]">
               Job Information
             </h3>
 
-            <p className="text-sm text-muted-foreground">
-              Basic identifiers and timeline for this job.
+            <p className="text-sm text-[#64748B]">
+              Basic details about the printing job.
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase text-muted-foreground">
+          <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
             Job Name / Description
           </label>
 
-          <Input
-            placeholder="Banner Printing"
-          />
+          <Input placeholder="e.g. Vehicle Branding - Toyota Hilux" />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Job Number
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Job ID
             </label>
 
-            <Input
-              placeholder="JQ-2419"
-            />
+            <Input placeholder="JQ-001" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Job Type
+            </label>
+
+            <Input placeholder="Banner Printing" />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
               Order Date
             </label>
 
@@ -55,7 +59,7 @@ export default function JobInformationSection() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
               Expected Completion
             </label>
 

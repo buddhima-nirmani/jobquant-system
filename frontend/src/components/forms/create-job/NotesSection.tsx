@@ -1,7 +1,4 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { Textarea } from "@/components/ui/textarea";
 
@@ -15,9 +12,7 @@ export default function NotesSection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold">
-              Notes & Instructions
-            </h3>
+            <h3 className="text-lg font-semibold">Notes & Instructions</h3>
 
             <p className="text-sm text-muted-foreground">
               Additional job requirements and special instructions.
@@ -26,7 +21,7 @@ export default function NotesSection() {
         </div>
 
         <Textarea
-          placeholder="Enter additional notes or special instructions..."
+          placeholder="Enter any special instructions, design requirements, delivery notes, or additional information..."
           className="min-h-32"
         />
       </CardContent>
