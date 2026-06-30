@@ -5,24 +5,17 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 
-import {
-  ClipboardList,
-  Users,
-  UserRoundCog,
-  WalletCards,
-} from "lucide-react";
+import { ClipboardList, Users, UserRoundCog, WalletCards } from "lucide-react";
 
-import {
-  recentActivities,
-  recentJobs,
-} from "@/data/dashboard";
+import { recentActivities, recentJobs } from "@/data/dashboard";
 
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Welcome Back, Buddhima!"
-        description="Thursday, May 2"
+        title="Welcome Back, Wasantha!"
+        description="Manage printing operations and monitor business performance."
+        date="Monday, 30 June 2026"
       />
 
       {/* KPI Cards */}
@@ -33,11 +26,7 @@ export default function AdminDashboardPage() {
           icon={ClipboardList}
         />
 
-        <DashboardStatCard
-          title="Active Clients"
-          value="34"
-          icon={Users}
-        />
+        <DashboardStatCard title="Active Clients" value="34" icon={Users} />
 
         <DashboardStatCard
           title="Staff Members"
@@ -60,14 +49,10 @@ export default function AdminDashboardPage() {
           <QuickActions />
         </div>
 
-        <RecentActivity
-          activities={recentActivities}
-        />
+        <RecentActivity activities={recentActivities} />
       </div>
 
-      <RecentJobs
-        jobs={recentJobs}
-      />
+      <RecentJobs jobs={recentJobs} />
     </div>
   );
 }

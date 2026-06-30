@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { typography } from "@/lib/typography";
 import StatusBadge from "@/components/ui/StatusBadge";
 
@@ -10,27 +12,41 @@ interface Job {
 
 interface RecentJobsProps {
   jobs: Job[];
+
+  title?: string;
+  subtitle?: string;
+  badgeText?: string;
+  viewAllText?: string;
+  viewAllHref?: string;
 }
 
 export default function RecentJobs({
   jobs,
+  title = "Active Jobs",
+  subtitle = "Currently active printing jobs",
+  badgeText = "Active",
+  viewAllText = "View All",
+  viewAllHref = "#",
 }: RecentJobsProps) {
   return (
     <div className="rounded-2xl border border-[#EAEAEA] bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-[#F1F5F9] px-6 py-5">
         <div>
           <h2 className={typography.sectionTitle}>
-            Active Jobs
+            {title}
           </h2>
 
           <p className={typography.sectionSubtitle}>
-            Currently active printing jobs
+            {subtitle}
           </p>
         </div>
 
-        <button className="text-sm font-medium text-[#FF6B00] transition-colors hover:text-[#E65C00]">
-          View All
-        </button>
+        <Link
+          href={viewAllHref}
+          className="text-sm font-medium text-[#FF6B00] transition-colors hover:text-[#E65C00]"
+        >
+          {viewAllText}
+        </Link>
       </div>
 
       <div className="divide-y divide-[#F1F5F9]">
@@ -46,7 +62,7 @@ export default function RecentJobs({
                 </p>
 
                 <span className="rounded-full bg-[#FFF2E8] px-2 py-1 text-[11px] font-medium text-[#FF6B00]">
-                  Active
+                  {badgeText}
                 </span>
               </div>
 

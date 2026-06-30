@@ -14,7 +14,10 @@ export default function AdminLayout({
       {/* Main Content */}
       <div className="ml-[240px] flex min-h-screen flex-1 flex-col">
         {/* Navbar spans the full width of the content area */}
-        <Navbar />
+        <Navbar
+  role="admin"
+  userName="Wasantha"
+/>
 
         {/* Page Content */}
         <main className="flex-1 bg-[#FAF8F4]">

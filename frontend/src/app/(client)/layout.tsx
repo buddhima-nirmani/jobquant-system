@@ -1,20 +1,27 @@
-import Sidebar from "@/components/navigation/Sidebar";
+import type { ReactNode } from "react";
+
 import Navbar from "@/components/navigation/Navbar";
+import Sidebar from "@/components/navigation/Sidebar";
 
 export default function ClientLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-[#FAF8F4]">
       <Sidebar role="client" />
 
-      <div className="flex-1 flex flex-col">
-        <Navbar />
+      <div className="ml-[240px] flex min-h-screen flex-1 flex-col">
+        <Navbar
+          role="client"
+          userName="Nirmani"
+        />
 
-        <main className="flex-1 p-6 bg-white">
-          {children}
+        <main className="flex-1 bg-[#FAF8F4]">
+          <div className="px-10 py-10">
+            {children}
+          </div>
         </main>
       </div>
     </div>

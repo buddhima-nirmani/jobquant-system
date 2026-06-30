@@ -7,11 +7,31 @@ import {
   Search,
 } from "lucide-react";
 
-export default function Navbar() {
+type NavbarProps = {
+  role: "admin" | "staff" | "client";
+  userName?: string;
+};
+
+const roleLabels = {
+  admin: "Administrator",
+  staff: "Staff Member",
+  client: "Client",
+};
+
+const placeholders = {
+  admin: "Search jobs, clients, invoices...",
+  staff: "Search assigned jobs...",
+  client: "Search your orders...",
+};
+
+export default function Navbar({
+  role,
+  userName = "Buddhima",
+}: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 h-24 border-b border-[#EAEAEA] bg-white">
 
-<div className="flex h-full items-center justify-between px-10">
+      <div className="flex h-full items-center justify-between px-10">
 
         {/* Search */}
 
@@ -23,7 +43,7 @@ export default function Navbar() {
           />
 
           <input
-            placeholder="Search jobs, clients, invoices..."
+            placeholder={placeholders[role]}
             className="h-12 w-full rounded-full border border-[#E5E7EB] bg-[#FAFAFA] pl-11 pr-4 text-sm outline-none transition focus:border-[#FF6B00] focus:bg-white"
           />
 
@@ -58,17 +78,19 @@ export default function Navbar() {
           <button className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] px-3 py-2 transition hover:bg-[#FAFAFA]">
 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF2E8] font-semibold text-[#FF6B00]">
-              B
+              {userName.charAt(0).toUpperCase()}
             </div>
 
             <div className="text-left">
+
               <p className="text-sm font-semibold text-[#0F172A]">
-                Buddhima
+                {userName}
               </p>
 
               <p className="text-xs text-[#64748B]">
-                Administrator
+                {roleLabels[role]}
               </p>
+
             </div>
 
             <ChevronDown
