@@ -1,3 +1,10 @@
+export const paymentStats = {
+  totalInvoices: 3,
+  pendingPayments: 1,
+  verifiedPayments: 1,
+  outstandingBalance: "LKR 70,500",
+};
+
 export const payments = [
   {
     id: "PAY-001",

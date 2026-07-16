@@ -1,61 +1,54 @@
+import Link from "next/link";
+
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import StaffTable from "@/components/tables/StaffTable";
 
-import Link from "next/link";
-
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { staff } from "@/data/staff";
 
-import {
-  Users,
-  UserPlus,
-  UserCheck,
-  UserX,
-  Search,
-} from "lucide-react";
+import { Users, BriefcaseBusiness, Search, Plus } from "lucide-react";
 
 export default function StaffPage() {
+  const totalStaff = staff.length;
+
+  const currentWorkload = staff.reduce(
+    (total, member) => total + member.assignedJobs,
+    0,
+  );
+
   return (
     <div className="space-y-8">
+      {/* Header */}
+
       <PageHeader
         title="Staff Management"
-        description="Manage and monitor all staff members."
+        description="Manage staff accounts and monitor team workload."
       />
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      {/* KPI Cards */}
+
+      <div className="grid gap-6 lg:grid-cols-2">
         <DashboardStatCard
           title="Total Staff"
-          value={32}
+          value={totalStaff}
           icon={Users}
         />
 
         <DashboardStatCard
-          title="New Staff"
-          value={4}
-          icon={UserPlus}
-        />
-
-        <DashboardStatCard
-          title="Active"
-          value={29}
-          icon={UserCheck}
-        />
-
-        <DashboardStatCard
-          title="Inactive"
-          value={3}
-          icon={UserX}
+          title="Current Workload"
+          value={`${currentWorkload} Jobs`}
+          icon={BriefcaseBusiness}
         />
       </div>
 
+      {/* Search & Add Staff */}
+
       <div className="flex items-center justify-between gap-4">
-        <div className="relative w-full max-w-md">
-          <Search
-            className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-          />
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
           <Input
             placeholder="Search staff..."
@@ -65,13 +58,16 @@ export default function StaffPage() {
 
         <Button
           asChild
-          className="h-11 rounded-xl bg-[#FF6B00] hover:bg-[#E55F00]"
+          className="h-11 shrink-0 rounded-xl bg-[#FF6B00] px-5 hover:bg-[#E65C00]"
         >
-          <Link href="/admin/staff/create">
+          <Link href="/admin/staff/create" className="flex items-center gap-2">
+            <Plus size={18} />
             Add Staff
           </Link>
         </Button>
       </div>
+
+      {/* Staff Table */}
 
       <StaffTable staff={staff} />
     </div>

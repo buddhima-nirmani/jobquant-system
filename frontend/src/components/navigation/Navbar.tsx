@@ -7,30 +7,27 @@ import {
   Search,
 } from "lucide-react";
 
+import HelpDropdown from "@/components/navbar/HelpDropdown";
+import NotificationDropdown from "@/components/navbar/NotificationDropdown";
+import ProfileDropdown from "@/components/navbar/ProfileDropdown";
+
 type NavbarProps = {
   role: "admin" | "staff" | "client";
-  userName?: string;
+  userName: string;
 };
 
-const roleLabels = {
+const roleNames = {
   admin: "Administrator",
   staff: "Staff Member",
   client: "Client",
 };
 
-const placeholders = {
-  admin: "Search jobs, clients, invoices...",
-  staff: "Search assigned jobs...",
-  client: "Search your orders...",
-};
-
 export default function Navbar({
   role,
-  userName = "Buddhima",
+  userName,
 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 h-24 border-b border-[#EAEAEA] bg-white">
-
       <div className="flex h-full items-center justify-between px-10">
 
         {/* Search */}
@@ -43,7 +40,7 @@ export default function Navbar({
           />
 
           <input
-            placeholder={placeholders[role]}
+            placeholder="Search jobs, clients, invoices..."
             className="h-12 w-full rounded-full border border-[#E5E7EB] bg-[#FAFAFA] pl-11 pr-4 text-sm outline-none transition focus:border-[#FF6B00] focus:bg-white"
           />
 
@@ -51,59 +48,77 @@ export default function Navbar({
 
         <div className="flex items-center gap-4">
 
-          <button
-            title="Help"
-            aria-label="Help"
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8]"
-          >
-            <CircleHelp
-              size={18}
-              className="text-[#64748B]"
-            />
-          </button>
+          {/* Help */}
 
-          <button
-            title="Notifications"
-            aria-label="Notifications"
-            className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8]"
-          >
-            <Bell
-              size={18}
-              className="text-[#64748B]"
-            />
+          <HelpDropdown>
 
-            <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#FF6B00]" />
-          </button>
+            <button
+              title="Help"
+              aria-label="Help"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8]"
+            >
+              <CircleHelp
+                size={18}
+                className="text-[#64748B]"
+              />
+            </button>
 
-          <button className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] px-3 py-2 transition hover:bg-[#FAFAFA]">
+          </HelpDropdown>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF2E8] font-semibold text-[#FF6B00]">
-              {userName.charAt(0).toUpperCase()}
-            </div>
+          {/* Notifications */}
 
-            <div className="text-left">
+          <NotificationDropdown>
 
-              <p className="text-sm font-semibold text-[#0F172A]">
-                {userName}
-              </p>
+            <button
+              title="Notifications"
+              aria-label="Notifications"
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8]"
+            >
+              <Bell
+                size={18}
+                className="text-[#64748B]"
+              />
 
-              <p className="text-xs text-[#64748B]">
-                {roleLabels[role]}
-              </p>
+              <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#FF6B00]" />
 
-            </div>
+            </button>
 
-            <ChevronDown
-              size={18}
-              className="text-[#94A3B8]"
-            />
+          </NotificationDropdown>
 
-          </button>
+          {/* Profile */}
+
+          <ProfileDropdown>
+
+            <button className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] px-3 py-2 transition hover:bg-[#FAFAFA]">
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF2E8] font-semibold text-[#FF6B00]">
+                {userName.charAt(0)}
+              </div>
+
+              <div className="text-left">
+
+                <p className="text-sm font-semibold text-[#0F172A]">
+                  {userName}
+                </p>
+
+                <p className="text-xs text-[#64748B]">
+                  {roleNames[role]}
+                </p>
+
+              </div>
+
+              <ChevronDown
+                size={18}
+                className="text-[#94A3B8]"
+              />
+
+            </button>
+
+          </ProfileDropdown>
 
         </div>
 
       </div>
-
     </header>
   );
 }
