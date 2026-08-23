@@ -1,59 +1,69 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
 import PageHeader from "@/components/layouts/PageHeader";
 import JobsTable from "@/components/tables/JobsTable";
 
-const staffJobs = [
-  {
-    id: "JQ-1045",
-    title: "Acrylic Signboard",
-    client: "ABC Holdings",
-    assignedStaff: "Buddhima",
-    dueDate: "03 Jul 2026",
-    amount: 24500,
-    priority: "High",
-    status: "In Progress",
-  },
-  {
-    id: "JQ-1042",
-    title: "Business Cards",
-    client: "Vision Tech",
-    assignedStaff: "Buddhima",
-    dueDate: "05 Jul 2026",
-    amount: 8200,
-    priority: "Medium",
-    status: "Pending",
-  },
-  {
-    id: "JQ-1038",
-    title: "Vehicle Wrap",
-    client: "AutoCare",
-    assignedStaff: "Buddhima",
-    dueDate: "28 Jun 2026",
-    amount: 65000,
-    priority: "High",
-    status: "Completed",
-  },
-  {
-    id: "JQ-1032",
-    title: "Pull-up Banner",
-    client: "Creative Studio",
-    assignedStaff: "Buddhima",
-    dueDate: "08 Jul 2026",
-    amount: 12800,
-    priority: "Low",
-    status: "Printing",
-  },
-];
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { JobListItem, listJobs } from "@/lib/api";
 
 export default function StaffJobsPage() {
+  const [jobs, setJobs] = useState<JobListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(true);
+      setError("");
+
+      listJobs({ q: search || undefined })
+        .then(setJobs)
+        .catch((err) =>
+          setError(err instanceof Error ? err.message : "Unable to load jobs.")
+        )
+        .finally(() => setLoading(false));
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
+
   return (
     <div className="space-y-8">
       <PageHeader
         title="Job Management"
         description="Create and manage assigned printing jobs."
-        date="Monday, 30 June 2026"
       />
 
-      <JobsTable jobs={staffJobs} />
+      <div className="flex items-center justify-between">
+        <Input
+          placeholder="Search by Job ID, Job Name or Client..."
+          className="h-11 w-[360px]"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+
+        <Button asChild className="bg-[#FF6B00] hover:bg-[#E55F00]">
+          <Link href="/staff/jobs/create">Create Job</Link>
+        </Button>
+      </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-sm text-[#94A3B8]">Loading jobs...</p>
+      ) : (
+        <JobsTable jobs={jobs} basePath="/staff/jobs" />
+      )}
     </div>
   );
 }

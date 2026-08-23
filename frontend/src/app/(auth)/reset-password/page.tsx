@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import AuthBrandPanel from "@/components/auth/AuthBrandPanel";
 import AuthLayout from "@/components/auth/AuthLayout";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
@@ -12,7 +14,11 @@ export default function ResetPasswordPage() {
           description="Create a secure password to regain access to your JobQuant Client Portal."
         />
       }
-      right={<ResetPasswordForm />}
+      right={
+        <Suspense fallback={null}>
+          <ResetPasswordForm />
+        </Suspense>
+      }
     />
   );
 }

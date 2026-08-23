@@ -1,13 +1,39 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { forgotPassword } from "@/lib/api";
 
 export default function ForgotPasswordForm() {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    setResetUrl(null);
+    setIsLoading(true);
+
+    try {
+      const result = await forgotPassword(email);
+      setMessage(result.message);
+      setResetUrl(result.reset_url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to process your request.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="w-full">
 
@@ -24,15 +50,14 @@ export default function ForgotPasswordForm() {
         </h1>
 
         <p className="mt-1 text-[13px] leading-5 text-[#64748B]">
-          Enter your registered email address and we&apos;ll send you instructions
-          to reset your password.
+          Enter your registered email address and we&apos;ll generate a reset link.
         </p>
 
       </div>
 
       {/* Form */}
 
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
 
         <div>
 
@@ -49,7 +74,10 @@ export default function ForgotPasswordForm() {
 
             <Input
               type="email"
-              placeholder="name@example.com"
+              placeholder="Enter the email address"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
               className="h-9 rounded-lg bg-[#FCFCFD] pl-9 text-sm"
             />
 
@@ -57,11 +85,35 @@ export default function ForgotPasswordForm() {
 
         </div>
 
-        <Button className="h-9 w-full rounded-lg bg-[#FF6B00] text-sm font-semibold hover:bg-[#E65C00]">
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+            {error}
+          </div>
+        )}
 
-          Send Reset Link
+        {message && (
+          <div className="space-y-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+            <p>{message}</p>
+            {resetUrl && (
+              <Link
+                href={resetUrl}
+                className="block break-all font-semibold text-[#FF6B00] underline"
+              >
+                {resetUrl}
+              </Link>
+            )}
+          </div>
+        )}
 
-          <ArrowRight className="ml-2 h-4 w-4" />
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="h-9 w-full rounded-lg bg-[#FF6B00] text-sm font-semibold hover:bg-[#E65C00] disabled:cursor-not-allowed disabled:opacity-70"
+        >
+
+          {isLoading ? "Sending..." : "Send Reset Link"}
+
+          {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
 
         </Button>
 

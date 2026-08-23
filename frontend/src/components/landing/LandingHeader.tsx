@@ -15,7 +15,7 @@ export default function LandingHeader() {
           className="flex items-center gap-4"
         >
           <Image
-            src="/logo.png"
+            src="/jobquant-icon.png"
             alt="JobQuant"
             width={48}
             height={48}

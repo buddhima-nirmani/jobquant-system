@@ -1,10 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import PaymentsTable from "@/components/tables/PaymentsTable";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
 import {
   Select,
   SelectContent,
@@ -13,7 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { payments } from "@/data/payments";
+import { PaymentResponse, listPayments } from "@/lib/api";
+import { getCurrentUser } from "@/lib/auth";
+import { formatCurrency } from "@/lib/format";
 
 import {
   Wallet,
@@ -23,6 +27,45 @@ import {
 } from "lucide-react";
 
 export default function PaymentsPage() {
+  const [payments, setPayments] = useState<PaymentResponse[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  function refetch() {
+    setLoading(true);
+    listPayments({ status: statusFilter === "all" ? undefined : statusFilter })
+      .then(setPayments)
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load payments.")
+      )
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    getCurrentUser().then((user) => setCurrentUserId(user?.id));
+  }, []);
+
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
+
+  const filtered = payments.filter((payment) => {
+    const term = search.toLowerCase();
+    return (
+      !term ||
+      payment.job_number.toLowerCase().includes(term) ||
+      payment.client_name.toLowerCase().includes(term)
+    );
+  });
+
+  const verified = payments.filter((p) => p.status === "Verified");
+  const pending = payments.filter((p) => p.status === "Pending");
+  const totalRevenue = verified.reduce((sum, p) => sum + p.amount, 0);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -30,78 +73,72 @@ export default function PaymentsPage() {
         description="Manage client payments and payment verification."
       />
 
-      {/* KPI Cards */}
-
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
-          title="Total Revenue"
-          value="LKR 2,400,000"
+          title="Total Verified Revenue"
+          value={formatCurrency(totalRevenue)}
           largeValue
           icon={Wallet}
         />
 
         <DashboardStatCard
           title="Verified Payments"
-          value="124"
+          value={verified.length}
           icon={BadgeCheck}
         />
 
         <DashboardStatCard
           title="Pending Payments"
-          value="12"
+          value={pending.length}
           icon={Clock3}
         />
 
         <DashboardStatCard
-          title="This Month"
-          value="LKR 320,000"
-          largeValue
+          title="Total Records"
+          value={payments.length}
           icon={Landmark}
         />
       </div>
 
-      {/* Search & Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <Input
+          placeholder="Search by Job ID or Client..."
+          className="h-11 w-[320px]"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Input
-            placeholder="Search by Payment ID or Job ID..."
-            className="h-11 w-[360px]"
-          />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="h-11 w-[180px]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
 
-          <Select>
-            <SelectTrigger className="h-11 w-[180px]">
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="all">
-                All Status
-              </SelectItem>
-
-              <SelectItem value="verified">
-                Verified
-              </SelectItem>
-
-              <SelectItem value="pending">
-                Pending
-              </SelectItem>
-
-              <SelectItem value="rejected">
-                Rejected
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button className="bg-[#FF6B00] hover:bg-[#E55F00]">
-          Export Report
-        </Button>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="Verified">Verified</SelectItem>
+            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Payments Table */}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
-      <PaymentsTable payments={payments} />
+      {loading ? (
+        <p className="text-sm text-[#94A3B8]">Loading payments...</p>
+      ) : (
+        <PaymentsTable
+          payments={filtered}
+          jobBasePath="/admin/jobs"
+          currentUserId={currentUserId}
+          canManage
+          onChanged={refetch}
+        />
+      )}
     </div>
   );
 }

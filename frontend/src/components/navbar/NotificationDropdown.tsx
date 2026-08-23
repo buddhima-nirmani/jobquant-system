@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Bell } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Bell, CheckCheck } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -11,33 +12,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import {
+  NotificationResponse,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/lib/api";
+import { formatRelativeTime } from "@/lib/format";
+
 type Props = {
   children: React.ReactNode;
+  onUnreadChange?: () => void;
 };
 
-const notifications = [
-  {
-    title: "New job created",
-    time: "2 minutes ago",
-  },
-  {
-    title: "Payment received",
-    time: "20 minutes ago",
-  },
-  {
-    title: "Client approved design",
-    time: "Yesterday",
-  },
-];
+export default function NotificationDropdown({ children, onUnreadChange }: Props) {
+  const router = useRouter();
+  const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
+  const [loading, setLoading] = useState(false);
 
-export default function NotificationDropdown({
-  children,
-}: Props) {
+  function loadNotifications() {
+    setLoading(true);
+    listNotifications()
+      .then(setNotifications)
+      .finally(() => setLoading(false));
+  }
+
+  async function handleSelect(notification: NotificationResponse) {
+    if (!notification.is_read) {
+      await markNotificationRead(notification.id);
+      onUnreadChange?.();
+    }
+    if (notification.link) {
+      router.push(notification.link);
+    }
+  }
+
+  async function handleMarkAllRead() {
+    await markAllNotificationsRead();
+    loadNotifications();
+    onUnreadChange?.();
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {children}
-      </DropdownMenuTrigger>
+    <DropdownMenu onOpenChange={(open) => open && loadNotifications()}>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
@@ -45,49 +63,59 @@ export default function NotificationDropdown({
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div>
-            <p className="font-semibold text-[#0F172A]">
-              Notifications
-            </p>
-
-            <p className="text-sm text-[#64748B]">
-              Recent activity
-            </p>
+            <p className="font-semibold text-[#0F172A]">Notifications</p>
+            <p className="text-sm text-[#64748B]">Recent activity</p>
           </div>
 
-          <Bell
-            size={18}
-            className="text-[#FF6B00]"
-          />
+          <Bell size={18} className="text-[#FF6B00]" />
         </div>
 
         <DropdownMenuSeparator />
 
-        {notifications.map((notification) => (
-          <DropdownMenuItem
-            key={notification.title}
-            className="cursor-pointer py-3"
-          >
-            <div>
-              <p className="font-medium text-[#0F172A]">
-                {notification.title}
-              </p>
+        {loading && (
+          <p className="px-4 py-4 text-sm text-[#94A3B8]">Loading...</p>
+        )}
 
-              <p className="text-xs text-[#94A3B8]">
-                {notification.time}
-              </p>
-            </div>
-          </DropdownMenuItem>
-        ))}
+        {!loading && notifications.length === 0 && (
+          <p className="px-4 py-4 text-sm text-[#94A3B8]">No notifications yet.</p>
+        )}
+
+        <div className="max-h-80 overflow-y-auto">
+          {notifications.map((notification) => (
+            <DropdownMenuItem
+              key={notification.id}
+              className="cursor-pointer items-start gap-2 py-3"
+              onSelect={() => handleSelect(notification)}
+            >
+              <span
+                className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                  notification.is_read ? "bg-transparent" : "bg-[#FF6B00]"
+                }`}
+              />
+              <div>
+                <p
+                  className={`font-medium ${
+                    notification.is_read ? "text-[#64748B]" : "text-[#0F172A]"
+                  }`}
+                >
+                  {notification.title}
+                </p>
+                <p className="text-xs text-[#94A3B8]">
+                  {formatRelativeTime(notification.created_at)}
+                </p>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </div>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          <Link
-            href="#"
-            className="justify-center font-medium text-[#FF6B00]"
-          >
-            View All Notifications
-          </Link>
+        <DropdownMenuItem
+          className="cursor-pointer justify-center gap-2 font-medium text-[#FF6B00]"
+          onSelect={handleMarkAllRead}
+        >
+          <CheckCheck size={15} />
+          Mark All as Read
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

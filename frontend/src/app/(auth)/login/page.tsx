@@ -8,8 +8,8 @@ export default function LoginPage() {
       left={
         <AuthBrandPanel
           badge="WELCOME BACK"
-          title={`Access Your\nClient Portal`}
-          description="Securely sign in to review design versions, track printing orders and manage payments until delivery."
+          title={`Access Your\nJobQuant Portal`}
+          description="Securely sign in to access your JobQuant portal and manage your printing operations."
         />
       }
       right={<LoginForm />}

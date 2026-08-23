@@ -15,7 +15,8 @@ import {
   Mail,
 } from "lucide-react";
 
-const API_URL = "http://localhost:8000";
+import { API_URL } from "@/lib/api";
+import { ROLE_HOME_ROUTE } from "@/lib/auth";
 
 type LoginResponse = {
   access_token: string;
@@ -74,13 +75,10 @@ export default function LoginForm() {
         JSON.stringify(loginData.user)
       );
 
-      if (loginData.user.role === "admin") {
-        router.push("/admin/dashboard");
-      } else if (loginData.user.role === "staff") {
-        router.push("/staff/dashboard");
-      } else {
-        router.push("/portal/dashboard");
-      }
+      router.push(
+        ROLE_HOME_ROUTE[loginData.user.role as keyof typeof ROLE_HOME_ROUTE] ??
+          "/portal/dashboard"
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -97,7 +95,7 @@ export default function LoginForm() {
       {/* Header */}
       <div className="mb-4">
         <span className="inline-flex rounded-full bg-[#FFF2E8] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#FF6B00]">
-          Client Login
+          JobQuant Login
         </span>
 
         <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#0F172A]">
@@ -105,8 +103,7 @@ export default function LoginForm() {
         </h1>
 
         <p className="mt-1 text-[13px] leading-5 text-[#64748B]">
-          Sign in to access your client portal and manage your printing
-          orders.
+        Sign in to your JobQuant account to continue.
         </p>
       </div>
 
@@ -126,7 +123,7 @@ export default function LoginForm() {
 
             <Input
               type="email"
-              placeholder="name@example.com"
+              placeholder="Enter the email address"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required

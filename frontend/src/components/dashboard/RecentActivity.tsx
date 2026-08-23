@@ -3,6 +3,8 @@ import Link from "next/link";
 import {
   ClipboardCheck,
   CreditCard,
+  FileText,
+  ImagePlus,
   Truck,
   UserPlus,
 } from "lucide-react";
@@ -10,10 +12,10 @@ import {
 import { typography } from "@/lib/typography";
 
 export type Activity = {
-  id: number;
+  id: number | string;
   title: string;
   time: string;
-  type: "job" | "payment" | "client" | "delivery";
+  type: "job" | "payment" | "client" | "delivery" | "design" | "invoice";
 };
 
 interface RecentActivityProps {
@@ -30,6 +32,8 @@ const icons = {
   payment: CreditCard,
   client: UserPlus,
   delivery: Truck,
+  design: ImagePlus,
+  invoice: FileText,
 };
 
 export default function RecentActivity({

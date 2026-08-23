@@ -36,7 +36,7 @@ export default function AuthBrandPanel({
         <div className="flex items-center gap-3">
 
           <Image
-            src="/logo.png"
+            src="/jobquant-icon.png"
             alt="JobQuant"
             width={36}
             height={36}
@@ -54,7 +54,7 @@ export default function AuthBrandPanel({
             </h2>
 
             <p className="mt-1 text-[11px] text-white/80">
-              Client Portal
+              JobQuant Portal
             </p>
 
           </div>

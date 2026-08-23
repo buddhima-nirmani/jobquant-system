@@ -1,11 +1,30 @@
+"use client";
+
 import {
   Card,
   CardContent,
 } from "@/components/ui/card";
 
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useJobForm } from "./JobFormContext";
 
 export default function ClientInformationSection() {
+  const {
+    clients,
+    clientsLoading,
+    clientId,
+    setClientId,
+    selectedClient,
+  } = useJobForm();
+
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardContent className="space-y-6 p-6">
@@ -20,26 +39,58 @@ export default function ClientInformationSection() {
             </h3>
 
             <p className="text-sm text-[#64748B]">
-              Enter client details.
+              Select an existing client. Their details fill in automatically.
             </p>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+            Select Client
+          </label>
+
+          <Select
+            value={clientId ? String(clientId) : undefined}
+            onValueChange={(value) => setClientId(Number(value))}
+            disabled={clientsLoading}
+          >
+            <SelectTrigger className="h-11 w-full">
+              <SelectValue
+                placeholder={
+                  clientsLoading ? "Loading clients..." : "Select a client"
+                }
+              />
+            </SelectTrigger>
+
+            <SelectContent>
+              {clients.map((client) => (
+                <SelectItem key={client.id} value={String(client.id)}>
+                  {client.name}
+                  {client.company ? ` — ${client.company}` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {!clientsLoading && clients.length === 0 && (
+            <p className="text-xs text-[#94A3B8]">
+              No clients found. Add a client from Client Management first.
+            </p>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Client Name
+              Company Name
             </label>
 
-            <Input placeholder="John Perera" />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Company Name (Optional)
-            </label>
-
-            <Input placeholder="ABC Company" />
+            <Input
+              value={selectedClient?.company ?? ""}
+              readOnly
+              placeholder="—"
+              className="bg-[#F8FAFC]"
+            />
           </div>
 
           <div className="space-y-2">
@@ -48,8 +99,10 @@ export default function ClientInformationSection() {
             </label>
 
             <Input
-              type="email"
-              placeholder="john@email.com"
+              value={selectedClient?.email ?? ""}
+              readOnly
+              placeholder="—"
+              className="bg-[#F8FAFC]"
             />
           </div>
 
@@ -58,7 +111,12 @@ export default function ClientInformationSection() {
               Contact Number
             </label>
 
-            <Input placeholder="+94 77 123 4567" />
+            <Input
+              value={selectedClient?.phone ?? ""}
+              readOnly
+              placeholder="—"
+              className="bg-[#F8FAFC]"
+            />
           </div>
         </div>
       </CardContent>

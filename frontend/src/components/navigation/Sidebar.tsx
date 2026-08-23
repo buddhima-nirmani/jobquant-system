@@ -144,7 +144,10 @@ export default function Sidebar({ role }: SidebarProps) {
         {navigation[role].map((item) => {
           const Icon = item.icon;
 
-          const active = pathname === item.href;
+          const isDashboard = item.href.endsWith("/dashboard");
+          const active = isDashboard
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
@@ -185,12 +188,12 @@ export default function Sidebar({ role }: SidebarProps) {
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2 text-xs text-[#475569]">
                 <Mail size={14} />
-                support@hansigraphics.lk
+                hansigraphics@gmail.com
               </div>
 
               <div className="flex items-center gap-2 text-xs text-[#475569]">
                 <Phone size={14} />
-                +94 11 234 5678
+                0753 661 661
               </div>
             </div>
           </div>

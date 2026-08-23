@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import {
   LogOut,
   Settings,
   User,
-  CircleHelp,
 } from "lucide-react";
 
 import {
@@ -17,30 +15,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logout } from "@/lib/auth";
 
 type Props = {
   children: React.ReactNode;
+  role: "admin" | "staff" | "client";
 };
 
-const API_URL = "http://localhost:8000";
+const BASE_PATH: Record<Props["role"], string> = {
+  admin: "/admin",
+  staff: "/staff",
+  client: "/portal",
+};
 
 export default function ProfileDropdown({
   children,
+  role,
 }: Props) {
-  const router = useRouter();
+  const basePath = BASE_PATH[role];
 
   async function handleLogout() {
-    try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch {
-      // Continue with local cleanup even if the API is unavailable.
-    } finally {
-      localStorage.removeItem("jobquant_user");
-      router.replace("/login");
-    }
+    localStorage.removeItem("jobquant_user");
+    await logout();
   }
 
   return (
@@ -67,7 +63,7 @@ export default function ProfileDropdown({
 
         <DropdownMenuItem asChild>
           <Link
-            href="/profile"
+            href={`${basePath}/profile`}
             className="cursor-pointer"
           >
             <User className="mr-2 h-4 w-4" />
@@ -77,21 +73,11 @@ export default function ProfileDropdown({
 
         <DropdownMenuItem asChild>
           <Link
-            href="/settings"
+            href={`${basePath}/settings`}
             className="cursor-pointer"
           >
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/help"
-            className="cursor-pointer"
-          >
-            <CircleHelp className="mr-2 h-4 w-4" />
-            Help Center
           </Link>
         </DropdownMenuItem>
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { Staff } from "@/data/staff";
+import type { StaffSummary } from "@/lib/api";
 import StaffActionsMenu from "@/components/staff/StaffActionsMenu";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 import {
   Card,
@@ -11,23 +12,11 @@ import {
 } from "@/components/ui/card";
 
 interface StaffTableProps {
-  staff: Staff[];
+  staff: StaffSummary[];
+  onChanged: () => void;
 }
 
-export default function StaffTable({
-  staff,
-}: StaffTableProps) {
-  const roleStyles = {
-    Manager:
-      "bg-slate-100 text-slate-700 border border-slate-200",
-
-    Receptionist:
-      "bg-sky-100 text-sky-700 border border-sky-200",
-
-    Designer:
-      "bg-violet-100 text-violet-700 border border-violet-200",
-  };
-
+export default function StaffTable({ staff, onChanged }: StaffTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
       <CardHeader className="border-b bg-white px-6 py-5">
@@ -41,19 +30,16 @@ export default function StaffTable({
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr>
-                <th className="w-[50%] px-6 py-4 text-left text-sm font-semibold text-slate-500">
+                <th className="w-[45%] px-6 py-4 text-left text-sm font-semibold text-slate-500">
                   Staff Member
                 </th>
-
-                <th className="w-[20%] px-6 py-4 text-left text-sm font-semibold text-slate-500">
-                  Role
-                </th>
-
                 <th className="w-[15%] px-6 py-4 text-left text-sm font-semibold text-slate-500">
-                  Current Jobs
+                  Status
                 </th>
-
-                <th className="w-[15%] px-6 py-4 text-right text-sm font-semibold text-slate-500">
+                <th className="w-[20%] px-6 py-4 text-left text-sm font-semibold text-slate-500">
+                  Assigned Jobs
+                </th>
+                <th className="w-[20%] px-6 py-4 text-right text-sm font-semibold text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -83,7 +69,6 @@ export default function StaffTable({
                           <p className="font-medium text-slate-900">
                             {member.name}
                           </p>
-
                           <p className="text-sm text-slate-500">
                             {member.email}
                           </p>
@@ -91,24 +76,18 @@ export default function StaffTable({
                       </div>
                     </td>
 
-                    <td className="px-6">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          roleStyles[member.role]
-                        }`}
-                      >
-                        {member.role}
-                      </span>
+                    <td className="px-6 py-5">
+                      <StatusBadge status={member.is_active ? "Active" : "Inactive"} />
                     </td>
 
-                    <td className="px-6">
+                    <td className="px-6 py-5">
                       <span className="font-semibold text-slate-700">
-                        {member.assignedJobs}
+                        {member.assigned_jobs}
                       </span>
                     </td>
 
-                    <td className="px-6 text-right">
-                      <StaffActionsMenu member={member} />
+                    <td className="px-6 py-5 text-right">
+                      <StaffActionsMenu member={member} onChanged={onChanged} />
                     </td>
                   </tr>
                 );
@@ -121,7 +100,6 @@ export default function StaffTable({
               <h3 className="text-lg font-semibold text-slate-700">
                 No staff members found
               </h3>
-
               <p className="mt-2 text-sm text-slate-500">
                 Add a staff member to get started.
               </p>

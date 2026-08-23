@@ -19,7 +19,7 @@ import {
   User,
 } from "lucide-react";
 
-const API_URL = "http://127.0.0.1:8000";
+import { API_URL } from "@/lib/api";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -128,7 +128,7 @@ export default function RegisterForm() {
               />
 
               <Input
-                placeholder="John Doe"
+                placeholder="Enter the full name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 required
@@ -150,7 +150,7 @@ export default function RegisterForm() {
 
               <Input
                 type="email"
-                placeholder="name@email.com"
+                placeholder="Enter the email address"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
@@ -176,7 +176,7 @@ export default function RegisterForm() {
               />
 
               <Input
-                placeholder="07X XXX XXXX"
+                placeholder="Enter the contact or phone number"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 required
@@ -200,7 +200,7 @@ export default function RegisterForm() {
               />
 
               <Input
-                placeholder="Company"
+                placeholder="Enter the company name"
                 value={company}
                 onChange={(event) => setCompany(event.target.value)}
                 className="h-9 rounded-lg bg-[#FCFCFD] pl-9 text-sm"

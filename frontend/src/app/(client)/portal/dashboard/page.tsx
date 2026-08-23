@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import {
   CheckCircle2,
   Clock3,
@@ -7,135 +11,111 @@ import {
 
 import PaymentSummaryCard from "@/components/cards/PaymentSummaryCard";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
-import RecentActivity, {
-  Activity,
-} from "@/components/dashboard/RecentActivity";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 import PageHeader from "@/components/layouts/PageHeader";
 
-const recentOrders = [
-  {
-    id: "JQ-1045",
-    title: "Acrylic Signboard",
-    client: "Estimated completion: 03 Jul 2026",
-    status: "In Progress",
-  },
-  {
-    id: "JQ-1042",
-    title: "Business Cards",
-    client: "Waiting for your approval",
-    status: "Pending",
-  },
-  {
-    id: "JQ-1038",
-    title: "Vehicle Wrap",
-    client: "Ready for collection",
-    status: "Completed",
-  },
-  {
-    id: "JQ-1032",
-    title: "Pull-up Banner",
-    client: "Printing in progress",
-    status: "In Progress",
-  },
-];
-
-const activities: Activity[] = [
-  {
-    id: 1,
-    title: "Design Version 3 uploaded for Acrylic Signboard",
-    time: "10 minutes ago",
-    type: "job",
-  },
-  {
-    id: 2,
-    title: "Payment of LKR 15,000 received",
-    time: "Yesterday",
-    type: "payment",
-  },
-  {
-    id: 3,
-    title: "Vehicle Wrap is ready for collection",
-    time: "2 days ago",
-    type: "delivery",
-  },
-  {
-    id: 4,
-    title: "Business Card artwork awaiting approval",
-    time: "3 days ago",
-    type: "job",
-  },
-];
+import {
+  ClientDashboard,
+  JobListItem,
+  getClientDashboard,
+  listJobs,
+} from "@/lib/api";
+import { formatCurrency, todayLabel } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth";
 
 export default function ClientDashboardPage() {
+  const [data, setData] = useState<ClientDashboard | null>(null);
+  const [orders, setOrders] = useState<JobListItem[]>([]);
+  const [userName, setUserName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getCurrentUser().then((user) => setUserName(user?.name ?? ""));
+
+    Promise.all([getClientDashboard(), listJobs()])
+      .then(([dashboard, jobs]) => {
+        setData(dashboard);
+        setOrders(jobs.slice(0, 5));
+      })
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load dashboard.")
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <p className="text-sm text-[#94A3B8]">Loading dashboard...</p>;
+  }
+
+  if (error || !data) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        {error || "Unable to load dashboard."}
+      </div>
+    );
+  }
+
+  const upcomingDue = orders
+    .filter((order) => order.due_date && order.status !== "Completed")
+    .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1))[0];
+
   return (
     <div className="space-y-8">
-
-<PageHeader
-  title="Welcome Back, Nirmani!"
-  description="Track your orders, payments and latest updates."
-  date="Monday, 30 June 2026"
-/>
+      <PageHeader
+        date={todayLabel()}
+        title={`Welcome Back${userName ? `, ${userName}` : ""}!`}
+        description="Track your orders, payments and latest updates."
+      />
 
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
         <DashboardStatCard
           title="Active Orders"
-          value={4}
+          value={data.active_orders}
           icon={Package}
         />
 
         <DashboardStatCard
-          title="Pending Approval"
-          value={2}
+          title="Pending Design Approvals"
+          value={data.pending_design_approvals}
           icon={Clock3}
         />
 
         <DashboardStatCard
           title="Completed Orders"
-          value={18}
+          value={data.completed_orders}
           icon={CheckCircle2}
         />
 
         <DashboardStatCard
           title="Outstanding Payments"
-          value="LKR 24,500"
+          value={formatCurrency(data.outstanding_payments)}
           icon={CreditCard}
           largeValue
         />
-
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-3">
-
-        <div className="xl:col-span-2">
-
-          <RecentJobs
-            jobs={recentOrders}
-            title="Recent Orders"
-            subtitle="Your latest printing orders"
-            badgeText="Order"
-            viewAllHref="/portal/orders"
-          />
-
-        </div>
-
-        <RecentActivity
-          activities={activities}
-          title="Latest Updates"
-          subtitle="Recent updates on your orders"
-          viewAllText="View Orders"
-          viewAllHref="/portal/orders"
-        />
-
-      </section>
-
-      <PaymentSummaryCard
-        outstandingAmount="LKR 24,500"
-        paidThisMonth="LKR 18,000"
-        nextDueDate="05 Jul 2026"
+      <RecentJobs
+        jobs={orders.map((order) => ({
+          id: order.id,
+          jobNumber: order.job_number,
+          title: order.job_name,
+          client: order.status,
+          status: order.status,
+        }))}
+        basePath="/portal/orders"
+        primaryIsName
+        title="Recent Orders"
+        subtitle="Your latest printing orders"
+        badgeText="Order"
+        viewAllHref="/portal/orders"
       />
 
+      <PaymentSummaryCard
+        outstandingAmount={formatCurrency(data.outstanding_payments)}
+        paidThisMonth="—"
+        nextDueDate={upcomingDue?.due_date ?? "—"}
+      />
     </div>
   );
 }

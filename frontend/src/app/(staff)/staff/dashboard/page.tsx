@@ -1,6 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
-import RecentActivity from "@/components/dashboard/RecentActivity";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 import QuickActions from "@/components/dashboard/QuickActions";
 
@@ -9,94 +12,100 @@ import {
   Clock3,
   Truck,
   CircleCheck,
+  Plus,
 } from "lucide-react";
 
-export default function StaffDashboardPage() {
-  const assignedJobs = [
-    {
-      id: "JQ-1045",
-      title: "Acrylic Signboard",
-      client: "ABC Holdings",
-      status: "In Progress",
-    },
-    {
-      id: "JQ-1042",
-      title: "Business Cards",
-      client: "Vision Tech",
-      status: "Pending",
-    },
-    {
-      id: "JQ-1038",
-      title: "Vehicle Wrap",
-      client: "AutoCare",
-      status: "Completed",
-    },
-  ];
+import { StaffDashboard, getStaffDashboard } from "@/lib/api";
+import { getCurrentUser } from "@/lib/auth";
+import { todayLabel } from "@/lib/format";
 
-  const activities = [
-    {
-      id: 1,
-      title: "Vehicle Wrap assigned to you",
-      time: "15 minutes ago",
-      type: "job" as const,
-    },
-    {
-      id: 2,
-      title: "Business Cards approved",
-      time: "1 hour ago",
-      type: "job" as const,
-    },
-    {
-      id: 3,
-      title: "Vehicle Wrap delivered",
-      time: "Yesterday",
-      type: "delivery" as const,
-    },
-  ];
+export default function StaffDashboardPage() {
+  const [data, setData] = useState<StaffDashboard | null>(null);
+  const [userName, setUserName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getCurrentUser().then((user) => setUserName(user?.name ?? ""));
+
+    getStaffDashboard()
+      .then(setData)
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load dashboard.")
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <p className="text-sm text-[#94A3B8]">Loading dashboard...</p>;
+  }
+
+  if (error || !data) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        {error || "Unable to load dashboard."}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       <PageHeader
-        date="Monday, 30 June 2026"
-        title="Welcome Back, Buddhima!"
+        date={todayLabel()}
+        title={`Welcome Back${userName ? `, ${userName}` : ""}!`}
         description="Manage assigned jobs and monitor daily printing tasks."
       />
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
           title="Assigned Jobs"
-          value="12"
+          value={data.assigned_jobs}
           icon={ClipboardList}
         />
 
         <DashboardStatCard
-          title="In Progress"
-          value="5"
+          title="Active Jobs"
+          value={data.active_jobs}
           icon={Clock3}
         />
 
         <DashboardStatCard
-          title="Pending Delivery"
-          value="3"
+          title="Due Soon"
+          value={data.jobs_due_soon}
           icon={Truck}
         />
 
         <DashboardStatCard
-          title="Completed Today"
-          value="4"
+          title="Completed"
+          value={data.completed_jobs}
           icon={CircleCheck}
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <RecentJobs jobs={assignedJobs} />
+      <RecentJobs
+        jobs={data.recent_jobs.map((job) => ({
+          id: job.id,
+          jobNumber: job.job_number,
+          title: job.job_name,
+          client: job.client_name,
+          status: job.status,
+        }))}
+        basePath="/staff/jobs"
+        title="Assigned Jobs"
+        subtitle="Jobs you created or are working on"
+        viewAllHref="/staff/jobs"
+      />
 
-        <RecentActivity
-          activities={activities}
-        />
-      </div>
-
-      <QuickActions />
+      <QuickActions
+        actions={[
+          {
+            title: "Create New Job",
+            description: "Create a new print job",
+            href: "/staff/jobs/create",
+            icon: Plus,
+          },
+        ]}
+      />
     </div>
   );
 }

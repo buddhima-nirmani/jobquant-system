@@ -1,43 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useJobForm } from "./JobFormContext";
 
 import { Card, CardContent } from "@/components/ui/card";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import { Plus, Trash2, Check } from "lucide-react";
 
-type OrderItem = {
-  description: string;
-  size: string;
-  quantity: string;
-  saved: boolean;
-};
-
 export default function OrderDetailsSection() {
-  const [transportation, setTransportation] = useState(false);
+  const {
+    items,
+    setItems,
+    transportation,
+    setTransportation,
+    distance,
+    setDistance,
+  } = useJobForm();
 
-  const [items, setItems] = useState<OrderItem[]>([
-    {
-      description: "",
-      size: "",
-      quantity: "",
-      saved: false,
-    },
-  ]);
-
-  const updateItem = (index: number, field: keyof OrderItem, value: string) => {
+  const updateItem = (
+    index: number,
+    field:
+      | "productCategory"
+      | "productName"
+      | "width"
+      | "height"
+      | "area"
+      | "unit"
+      | "quantity"
+      | "material"
+      | "specification"
+      | "printType"
+      | "lamination"
+      | "installation",
+    value: string
+  ) => {
     const updated = [...items];
 
     updated[index] = {
@@ -45,42 +43,79 @@ export default function OrderDetailsSection() {
       [field]: value,
     };
 
+    if (field === "width" || field === "height") {
+      const width =
+        field === "width"
+          ? Number(value)
+          : Number(updated[index].width);
+
+      const height =
+        field === "height"
+          ? Number(value)
+          : Number(updated[index].height);
+
+      if (width > 0 && height > 0) {
+        updated[index].area = (width * height).toFixed(2);
+      } else {
+        updated[index].area = "";
+      }
+    }
+
     setItems(updated);
   };
 
   const saveRow = (index: number) => {
     const updated = [...items];
 
-    updated[index].saved = true;
+    updated[index] = {
+      ...updated[index],
+      saved: true,
+    };
 
     setItems(updated);
   };
 
   const addRow = () => {
-    if (!items[items.length - 1].saved) return;
+    const lastItem = items[items.length - 1];
+
+    if (!lastItem.saved) {
+      return;
+    }
 
     setItems([
       ...items,
       {
-        description: "",
-        size: "",
+        productCategory: "",
+        productName: "",
+        width: "",
+        height: "",
+        area: "",
+        unit: "",
         quantity: "",
+        material: "",
+        specification: "",
+        printType: "",
+        lamination: "",
+        installation: "",
+        predictedCost: null,
         saved: false,
       },
     ]);
   };
 
   const removeRow = (index: number) => {
-    if (items.length === 1) return;
+    if (items.length === 1) {
+      return;
+    }
 
-    setItems(items.filter((_, i) => i !== index));
+    setItems(items.filter((_, itemIndex) => itemIndex !== index));
   };
 
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardContent className="space-y-6 p-6">
-        {/* Header */}
 
+        {/* Section Header */}
         <div className="flex items-start gap-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF2E8] font-semibold text-[#FF6B00]">
             04
@@ -92,181 +127,337 @@ export default function OrderDetailsSection() {
             </h3>
 
             <p className="text-sm text-[#64748B]">
-              Configure printing specifications.
+              Enter the printing specifications used for cost estimation.
             </p>
           </div>
         </div>
 
-        {/* Printing Options */}
+        {/* Order Items */}
+        <div className="space-y-4">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-xl border border-[#EAEAEA] p-5"
+            >
+              {/* Item Header */}
+              <div className="mb-5 flex items-center justify-between">
+                <h4 className="font-medium text-[#0F172A]">
+                  Item {index + 1}
+                </h4>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Print Type
-            </label>
-
-            <Select>
-              <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Select Print Type" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="large">Large Format</SelectItem>
-
-                <SelectItem value="offset">Offset Printing</SelectItem>
-
-                <SelectItem value="digital">Digital Printing</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Material
-            </label>
-
-            <Select>
-              <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Select Material" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="vinyl">Vinyl</SelectItem>
-
-                <SelectItem value="flex">Flex</SelectItem>
-
-                <SelectItem value="paper">Paper</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Material Type
-            </label>
-
-            <Select>
-              <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Select Material Type" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="matte">Matte</SelectItem>
-
-                <SelectItem value="gloss">Gloss</SelectItem>
-
-                <SelectItem value="satin">Satin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Items Table */}
-
-        <div className="overflow-hidden rounded-xl border border-[#EAEAEA]">
-          <table className="w-full">
-            <thead className="bg-[#FAFBFC]">
-              <tr className="border-b border-[#EAEAEA]">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                  Description
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                  Size
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                  Quantity
-                </th>
-
-                <th className="w-14 text-center"></th>
-
-                <th className="w-14 text-center"></th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {items.map((item, index) => (
-                <tr key={index} className="border-b last:border-none">
-                  <td className="p-3">
-                    <Input
-                      placeholder="Vehicle Sticker"
-                      value={item.description}
-                      disabled={item.saved}
-                      onChange={(e) =>
-                        updateItem(index, "description", e.target.value)
-                      }
+                {items.length > 1 && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    title="Remove Item"
+                    onClick={() => removeRow(index)}
+                    disabled={item.saved}
+                    className="h-9 w-9 hover:bg-red-50"
+                  >
+                    <Trash2
+                      size={17}
+                      className="text-red-500"
                     />
-                  </td>
+                  </Button>
+                )}
+              </div>
 
-                  <td className="p-3">
-                    <Input
-                      placeholder="4 × 6 ft"
-                      value={item.size}
-                      disabled={item.saved}
-                      onChange={(e) =>
-                        updateItem(index, "size", e.target.value)
-                      }
-                    />
-                  </td>
+              {/* Product Information */}
+              <div className="grid gap-6 lg:grid-cols-2">
 
-                  <td className="p-3">
-                    <Input
-                      type="number"
-                      placeholder="10"
-                      value={item.quantity}
-                      disabled={item.saved}
-                      onChange={(e) =>
-                        updateItem(index, "quantity", e.target.value)
-                      }
-                    />
-                  </td>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Product Category
+                  </label>
 
-                  {/* Save */}
+                  <Input
+                    placeholder="Vehicle Wrap"
+                    value={item.productCategory}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "productCategory",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
 
-                  <td className="text-center">
-                    <Button
-                      type="button"
-                      size="icon"
-                      title="Save Item"
-                      onClick={() => saveRow(index)}
-                      disabled={
-                        item.saved ||
-                        !item.description ||
-                        !item.size ||
-                        !item.quantity
-                      }
-                      className="h-9 w-9 bg-[#FF6B00] hover:bg-[#E55F00] disabled:bg-[#FFB27A] disabled:opacity-100"
-                    >
-                      <Check size={18} className="text-white" />
-                    </Button>
-                  </td>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Product Name
+                  </label>
 
-                  {/* Delete */}
+                  <Input
+                    placeholder="Toyota Hilux Vehicle Wrap"
+                    value={item.productName}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "productName",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
 
-                  <td className="text-center">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      title="Remove Item"
-                      onClick={() => removeRow(index)}
-                      disabled={
-                        index === 0 && items.length === 1 && !item.saved
-                      }
-                      className="h-9 w-9 hover:bg-red-50"
-                    >
-                      <Trash2 size={18} className="text-red-500" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </div>
+
+              {/* Dimensions */}
+              <div className="mt-6 grid gap-6 lg:grid-cols-4">
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Width
+                  </label>
+
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="6"
+                    value={item.width}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "width",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Height
+                  </label>
+
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="3"
+                    value={item.height}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "height",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Area
+                  </label>
+
+                  <Input
+                    value={item.area}
+                    readOnly
+                    placeholder="Calculated"
+                    className="h-11 bg-[#FAF8F4]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Unit
+                  </label>
+
+                  <Input
+                    placeholder="ft"
+                    value={item.unit}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "unit",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+              </div>
+
+              {/* Quantity / Material / Specification */}
+              <div className="mt-6 grid gap-6 lg:grid-cols-3">
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Quantity
+                  </label>
+
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    value={item.quantity}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "quantity",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Material
+                  </label>
+
+                  <Input
+                    placeholder="Vinyl"
+                    value={item.material}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "material",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Specification
+                  </label>
+
+                  <Input
+                    placeholder="Cast Vinyl - Matte"
+                    value={item.specification}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "specification",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+              </div>
+
+              {/* Printing / Finishing */}
+              <div className="mt-6 grid gap-6 lg:grid-cols-3">
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Print Type
+                  </label>
+
+                  <Input
+                    placeholder="Digital"
+                    value={item.printType}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "printType",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Lamination
+                  </label>
+
+                  <Input
+                    placeholder="Matte"
+                    value={item.lamination}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "lamination",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                    Installation
+                  </label>
+
+                  <Input
+                    placeholder="Yes"
+                    value={item.installation}
+                    disabled={item.saved}
+                    onChange={(event) =>
+                      updateItem(
+                        index,
+                        "installation",
+                        event.target.value
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+
+              </div>
+
+              {/* Save Item */}
+              <div className="mt-5 flex justify-end">
+                <Button
+                  type="button"
+                  onClick={() => saveRow(index)}
+                  disabled={
+                    item.saved ||
+                    !item.productCategory ||
+                    !item.productName ||
+                    !item.width ||
+                    !item.height ||
+                    !item.area ||
+                    !item.unit ||
+                    !item.quantity ||
+                    !item.material ||
+                    !item.specification ||
+                    !item.printType ||
+                    !item.lamination ||
+                    !item.installation
+                  }
+                  className="bg-[#FF6B00] hover:bg-[#E55F00] disabled:bg-[#FFB27A]"
+                >
+                  <Check size={17} className="mr-2" />
+
+                  {item.saved
+                    ? "Saved"
+                    : "Save Item"}
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Add Item */}
-
         <div className="flex justify-start">
           <Button
             type="button"
@@ -281,8 +472,8 @@ export default function OrderDetailsSection() {
         </div>
 
         {/* Transportation */}
-
         <div className="rounded-xl border border-[#EAEAEA] p-5">
+
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-[#0F172A]">
@@ -290,7 +481,7 @@ export default function OrderDetailsSection() {
               </h4>
 
               <p className="text-sm text-[#64748B]">
-                Enable if delivery is required.
+                This determines the Transport value used by the model.
               </p>
             </div>
 
@@ -301,15 +492,29 @@ export default function OrderDetailsSection() {
           </div>
 
           {transportation && (
-            <div className="mt-5">
+            <div className="mt-5 max-w-sm">
+
               <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[#64748B]">
                 Distance (KM)
               </label>
 
-              <Input type="number" placeholder="25" className="h-11" />
+              <Input
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="25"
+                value={distance}
+                onChange={(event) =>
+                  setDistance(event.target.value)
+                }
+                className="h-11"
+              />
+
             </div>
           )}
+
         </div>
+
       </CardContent>
     </Card>
   );

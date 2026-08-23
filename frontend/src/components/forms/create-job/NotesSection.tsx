@@ -1,8 +1,14 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Textarea } from "@/components/ui/textarea";
 
+import { useJobForm } from "./JobFormContext";
+
 export default function NotesSection() {
+  const { notes, setNotes } = useJobForm();
+
   return (
     <Card>
       <CardContent className="p-6 space-y-6">
@@ -23,6 +29,8 @@ export default function NotesSection() {
         <Textarea
           placeholder="Enter any special instructions, design requirements, delivery notes, or additional information..."
           className="min-h-32"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
         />
       </CardContent>
     </Card>

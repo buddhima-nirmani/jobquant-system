@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useState } from "react";
 
 import {
   ArrowLeft,
@@ -14,12 +15,50 @@ import {
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { resetPassword } from "@/lib/api";
 
 export default function ResetPasswordForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") ?? "";
+
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    if (!token) {
+      setError("This reset link is missing its token. Request a new one.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await resetPassword(token, password);
+      router.push("/password-reset-success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to reset password.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="w-full">
@@ -42,7 +81,7 @@ export default function ResetPasswordForm() {
 
       </div>
 
-      <form className="space-y-3">
+      <form className="space-y-3" onSubmit={handleSubmit}>
 
         {/* Password */}
 
@@ -100,6 +139,8 @@ export default function ResetPasswordForm() {
 
             <Input
               type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Confirm password"
               className="h-9 rounded-lg bg-[#FCFCFD] px-9 text-sm"
             />
@@ -124,11 +165,21 @@ export default function ResetPasswordForm() {
 
         <PasswordStrength password={password} />
 
-        <Button className="h-9 w-full rounded-lg bg-[#FF6B00] text-sm font-semibold hover:bg-[#E65C00]">
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+            {error}
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="h-9 w-full rounded-lg bg-[#FF6B00] text-sm font-semibold hover:bg-[#E65C00] disabled:cursor-not-allowed disabled:opacity-70"
+        >
 
           <CheckCircle2 className="mr-2 h-4 w-4" />
 
-          Update Password
+          {isLoading ? "Updating..." : "Update Password"}
 
         </Button>
 

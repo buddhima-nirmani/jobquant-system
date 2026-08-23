@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -13,7 +15,17 @@ import {
 
 import { Input } from "@/components/ui/input";
 
+import { useJobForm } from "./JobFormContext";
+
 export default function AssignmentSection() {
+  const {
+    staffMembers,
+    staffLoading,
+    assignedStaffId,
+    setAssignedStaffId,
+    currentUser,
+  } = useJobForm();
+
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardContent className="space-y-6 p-6">
@@ -40,23 +52,25 @@ export default function AssignmentSection() {
               Assigned Staff
             </label>
 
-            <Select>
+            <Select
+              value={assignedStaffId ? String(assignedStaffId) : undefined}
+              onValueChange={(value) => setAssignedStaffId(Number(value))}
+              disabled={staffLoading}
+            >
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Select Staff Member" />
+                <SelectValue
+                  placeholder={
+                    staffLoading ? "Loading staff..." : "Select Staff Member"
+                  }
+                />
               </SelectTrigger>
 
               <SelectContent>
-                <SelectItem value="john">
-                  John Smith
-                </SelectItem>
-
-                <SelectItem value="sarah">
-                  Sarah Lee
-                </SelectItem>
-
-                <SelectItem value="david">
-                  David Silva
-                </SelectItem>
+                {staffMembers.map((member) => (
+                  <SelectItem key={member.id} value={String(member.id)}>
+                    {member.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -68,7 +82,13 @@ export default function AssignmentSection() {
             </label>
 
             <Input
-              value="Buddhima (Administrator)"
+              value={
+                currentUser
+                  ? `${currentUser.name} (${
+                      currentUser.role === "admin" ? "Administrator" : "Staff"
+                    })`
+                  : "—"
+              }
               readOnly
               className="h-11 bg-[#F8FAFC]"
             />
