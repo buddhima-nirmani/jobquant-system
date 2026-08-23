@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserRegister(BaseModel):
     name: str
     email: EmailStr
+    phone: str | None = None
+    company: str | None = None
     password: str
 
 
@@ -16,6 +18,8 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: EmailStr
+    phone: str | None = None
+    company: str | None = None
     role: str
     is_active: bool
 

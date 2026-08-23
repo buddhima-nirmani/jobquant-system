@@ -18,18 +18,18 @@ from app.services.auth import (
 
 router = APIRouter(
     prefix="/api/auth",
-    tags=["Authentication"]
+    tags=["Authentication"],
 )
 
 
 @router.post(
     "/register",
     response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def register(
     user_data: UserRegister,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     existing_user = (
         db.query(User)
@@ -40,12 +40,14 @@ def register(
     if existing_user:
         raise HTTPException(
             status_code=400,
-            detail="Email is already registered."
+            detail="Email is already registered.",
         )
 
     user = User(
         name=user_data.name,
         email=user_data.email,
+        phone=user_data.phone,
+        company=user_data.company,
         password_hash=hash_password(user_data.password),
         role="client",
         is_active=True,
@@ -60,11 +62,11 @@ def register(
 
 @router.post(
     "/login",
-    response_model=TokenResponse
+    response_model=TokenResponse,
 )
 def login(
     login_data: UserLogin,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     user = (
         db.query(User)
@@ -75,27 +77,27 @@ def login(
     if not user:
         raise HTTPException(
             status_code=401,
-            detail="Invalid email or password."
+            detail="Invalid email or password.",
         )
 
     if not verify_password(
         login_data.password,
-        user.password_hash
+        user.password_hash,
     ):
         raise HTTPException(
             status_code=401,
-            detail="Invalid email or password."
+            detail="Invalid email or password.",
         )
 
     if not user.is_active:
         raise HTTPException(
             status_code=403,
-            detail="User account is inactive."
+            detail="User account is inactive.",
         )
 
     token = create_access_token(
         user.id,
-        user.role
+        user.role,
     )
 
     return {
