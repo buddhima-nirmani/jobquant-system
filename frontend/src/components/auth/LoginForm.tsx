@@ -15,7 +15,7 @@ import {
   Mail,
 } from "lucide-react";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 type LoginResponse = {
   access_token: string;
@@ -47,6 +47,7 @@ export default function LoginForm() {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -66,11 +67,8 @@ export default function LoginForm() {
 
       const loginData = data as LoginResponse;
 
-      localStorage.setItem(
-        "jobquant_token",
-        loginData.access_token
-      );
-
+      // Store only non-sensitive user information.
+      // The JWT is stored in the HTTP-only cookie by FastAPI.
       localStorage.setItem(
         "jobquant_user",
         JSON.stringify(loginData.user)

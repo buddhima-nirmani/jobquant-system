@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   LogOut,
@@ -21,9 +22,27 @@ type Props = {
   children: React.ReactNode;
 };
 
+const API_URL = "http://localhost:8000";
+
 export default function ProfileDropdown({
   children,
 }: Props) {
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Continue with local cleanup even if the API is unavailable.
+    } finally {
+      localStorage.removeItem("jobquant_user");
+      router.replace("/login");
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -78,7 +97,10 @@ export default function ProfileDropdown({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="cursor-pointer text-red-600">
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="cursor-pointer text-red-600 focus:text-red-600"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>
