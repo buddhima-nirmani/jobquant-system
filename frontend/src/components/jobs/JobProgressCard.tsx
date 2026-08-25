@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 
 import { JobDetail, updateJobProgress } from "@/lib/api";
+import { parseApiDate } from "@/lib/format";
 
 const JOB_STATUSES = [
   "Pending",
@@ -109,7 +110,7 @@ export default function JobProgressCard({
                   </p>
                 </div>
                 <p className="text-xs text-[#94A3B8]">
-                  {new Date(entry.created_at).toLocaleString()}
+                  {parseApiDate(entry.created_at).toLocaleString()}
                 </p>
               </div>
             ))}

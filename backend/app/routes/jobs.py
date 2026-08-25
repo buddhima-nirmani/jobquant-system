@@ -26,6 +26,7 @@ from app.services.access import check_job_access
 from app.services.job_number import resolve_job_number, suggest_job_number
 from app.services.notifications import notify
 from app.services.payments import paid_amount as _paid_amount_service
+from app.services.text import titlecase_item_fields, to_title_case
 
 router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
 
@@ -145,9 +146,9 @@ def create_job(
 
     job = Job(
         job_number=resolve_job_number(db, payload.job_number),
-        job_name=payload.job_name,
+        job_name=to_title_case(payload.job_name),
         description=payload.description,
-        job_type=payload.job_type,
+        job_type=to_title_case(payload.job_type),
         client_id=payload.client_id,
         assigned_staff_id=payload.assigned_staff_id,
         created_by=current_user.id,
@@ -166,7 +167,7 @@ def create_job(
     db.flush()
 
     for item in payload.items:
-        db.add(JobItem(job_id=job.id, **item.model_dump()))
+        db.add(JobItem(job_id=job.id, **titlecase_item_fields(item.model_dump())))
 
     db.add(
         JobProgress(
@@ -182,8 +183,9 @@ def create_job(
             db,
             payload.assigned_staff_id,
             "job",
-            f"You were assigned to {job.job_number} - {job.job_name}",
+            "You were assigned to {job_number} - {job_name}",
             link=f"/staff/jobs/{job.id}",
+            job_id=job.id,
         )
 
     db.commit()
@@ -309,6 +311,12 @@ def update_job(
             )
         updates["job_number"] = new_number
 
+    if "job_name" in updates:
+        updates["job_name"] = to_title_case(updates["job_name"])
+
+    if "job_type" in updates:
+        updates["job_type"] = to_title_case(updates["job_type"])
+
     if "assigned_staff_id" in updates and updates["assigned_staff_id"] is not None:
         staff_member = (
             db.query(User)
@@ -360,7 +368,7 @@ def update_job_items(
     db.query(JobItem).filter(JobItem.job_id == job_id).delete()
 
     for item in payload:
-        db.add(JobItem(job_id=job_id, **item.model_dump()))
+        db.add(JobItem(job_id=job_id, **titlecase_item_fields(item.model_dump())))
 
     db.commit()
 
@@ -430,8 +438,9 @@ def update_job_progress(
         db,
         job.client_id,
         "job",
-        f"{job.job_number} status updated to {payload.status}",
+        f"{{job_number}} status updated to {payload.status}",
         link=f"/portal/orders/{job.id}",
+        job_id=job.id,
     )
 
     db.commit()

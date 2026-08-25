@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/toast";
 import { deletePayment, type PaymentResponse } from "@/lib/api";
+import { formatCurrency, parseApiDate } from "@/lib/format";
 
 interface ClientPaymentsTableProps {
   payments: PaymentResponse[];
@@ -24,6 +25,11 @@ export default function ClientPaymentsTable({
   onChanged,
 }: ClientPaymentsTableProps) {
   const { showToast } = useToast();
+  const router = useRouter();
+
+  const showActionsColumn = payments.some(
+    (payment) => currentUserId === payment.uploaded_by && payment.status !== "Verified"
+  );
 
   async function handleDelete(id: number) {
     try {
@@ -63,23 +69,30 @@ export default function ClientPaymentsTable({
                 Uploaded
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+                Outstanding
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">
                 Status
               </th>
-              <th className="w-32"></th>
+              {showActionsColumn && <th className="w-16"></th>}
             </tr>
           </thead>
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {payments.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
+                <td colSpan={showActionsColumn ? 6 : 5} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
                   No payments uploaded yet.
                 </td>
               </tr>
             )}
 
             {payments.map((payment) => (
-              <tr key={payment.id} className="transition hover:bg-[#FAFAFA]">
+              <tr
+                key={payment.id}
+                onClick={() => router.push(`/portal/orders/${payment.job_id}`)}
+                className="cursor-pointer transition hover:bg-[#FAFAFA]"
+              >
                 <td className="px-6 py-5 font-semibold text-[#0F172A]">
                   {payment.job_number}
                 </td>
@@ -93,23 +106,22 @@ export default function ClientPaymentsTable({
                 </td>
 
                 <td className="px-6 py-5 text-[#64748B]">
-                  {new Date(payment.created_at).toLocaleDateString()}
+                  {parseApiDate(payment.created_at).toLocaleDateString()}
+                </td>
+
+                <td className="px-6 py-5 font-medium text-[#0F172A]">
+                  {payment.outstanding_amount !== null
+                    ? formatCurrency(payment.outstanding_amount)
+                    : "—"}
                 </td>
 
                 <td className="px-6 py-5">
                   <StatusBadge status={clientLabel(payment.status)} />
                 </td>
 
-                <td className="px-6 py-5">
-                  <div className="flex items-center justify-end gap-3">
-                    <Link
-                      href={`/portal/orders/${payment.job_id}`}
-                      className="text-sm font-medium text-[#FF6B00] hover:underline"
-                    >
-                      View Order
-                    </Link>
-
-                    {currentUserId === payment.uploaded_by && (
+                {showActionsColumn && (
+                  <td className="px-6 py-5 text-right" onClick={(event) => event.stopPropagation()}>
+                    {currentUserId === payment.uploaded_by && payment.status !== "Verified" && (
                       <ConfirmDialog
                         trigger={
                           <button
@@ -126,8 +138,8 @@ export default function ClientPaymentsTable({
                         onConfirm={() => handleDelete(payment.id)}
                       />
                     )}
-                  </div>
-                </td>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

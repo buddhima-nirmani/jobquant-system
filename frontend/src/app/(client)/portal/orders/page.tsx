@@ -6,6 +6,7 @@ import { CheckCircle2, Clock3, PackageSearch, Search } from "lucide-react";
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import OrdersTable from "@/components/tables/OrdersTable";
+import LoadingState from "@/components/ui/LoadingState";
 import { JobListItem, listJobs } from "@/lib/api";
 
 const ACTIVE_STATUSES = [
@@ -88,7 +89,7 @@ export default function ClientOrdersPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading orders...</p>
+        <LoadingState label="Loading orders..." />
       ) : (
         <OrdersTable orders={orders} />
       )}

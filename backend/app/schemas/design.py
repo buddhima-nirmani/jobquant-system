@@ -18,6 +18,7 @@ class DesignVersionResponse(BaseModel):
 class DesignCommentCreate(BaseModel):
     comment: str
     is_revision_request: bool = False
+    parent_id: int | None = None
 
 
 class DesignCommentUpdate(BaseModel):
@@ -32,6 +33,7 @@ class DesignCommentResponse(BaseModel):
     user_role: str
     comment: str
     is_revision_request: bool
+    parent_id: int | None
     created_at: datetime
     updated_at: datetime | None
     can_edit: bool

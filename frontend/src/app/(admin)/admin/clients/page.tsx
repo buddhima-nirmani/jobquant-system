@@ -8,6 +8,7 @@ import ClientsTable from "@/components/tables/ClientsTable";
 import ExportClientsButton from "@/components/clients/ExportClientsButton";
 
 import { Input } from "@/components/ui/input";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { ClientSummary, listClients } from "@/lib/api";
 
@@ -56,12 +57,12 @@ export default function ClientsPage() {
         <DashboardStatCard title="Inactive" value={inactive} icon={UserX} />
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative w-full max-w-md">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search by client name..."
-            className="pl-10 h-11 rounded-xl"
+            className="pl-10 h-11 w-full rounded-xl"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -77,7 +78,7 @@ export default function ClientsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading clients...</p>
+        <LoadingState label="Loading clients..." />
       ) : (
         <ClientsTable clients={clients} onChanged={refetch} />
       )}

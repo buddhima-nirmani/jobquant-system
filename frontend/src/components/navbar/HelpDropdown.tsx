@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import {
   CircleHelp,
-  BookOpen,
   PhoneCall,
   Info,
 } from "lucide-react";
@@ -45,7 +44,7 @@ const faqs = [
   },
   {
     q: "How do I request a change to a design?",
-    a: "On the job's design section, use \"Request Revision\" and describe the change — the assigned staff member will be notified.",
+    a: "Leave a comment under the design version explaining the change you need — staff will see it and can reply directly to your comment.",
   },
 ];
 
@@ -67,11 +66,6 @@ export default function HelpDropdown({ children }: Props) {
           </div>
 
           <DropdownMenuSeparator />
-
-          <DropdownMenuItem className="text-[#94A3B8]" disabled>
-            <BookOpen className="mr-2 h-4 w-4" />
-            User Guide (coming soon)
-          </DropdownMenuItem>
 
           <DropdownMenuItem
             className="cursor-pointer"

@@ -6,6 +6,7 @@ import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import PaymentsTable from "@/components/tables/PaymentsTable";
 import { Input } from "@/components/ui/input";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { PaymentResponse, listPayments } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
@@ -68,7 +69,7 @@ export default function StaffPaymentsPage() {
 
       <Input
         placeholder="Search by Job ID or Client..."
-        className="h-11 w-[320px]"
+        className="h-11 w-full sm:w-[320px]"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
       />
@@ -80,7 +81,7 @@ export default function StaffPaymentsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading payments...</p>
+        <LoadingState label="Loading payments..." />
       ) : (
         <PaymentsTable
           payments={filtered}

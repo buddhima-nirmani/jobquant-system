@@ -51,8 +51,10 @@ class DesignComment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     comment = Column(Text, nullable=False)
     is_revision_request = Column(Boolean, default=False)
+    parent_id = Column(Integer, ForeignKey("design_comments.id"), nullable=True)
     created_at = Column(DateTime, default=func.now(), server_default=func.now())
     updated_at = Column(DateTime, nullable=True)
 
     design_version = relationship("DesignVersion", back_populates="comments")
     user = relationship("User")
+    parent = relationship("DesignComment", remote_side=[id])

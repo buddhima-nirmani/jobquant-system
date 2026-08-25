@@ -7,3 +7,4 @@ backend/venv/
 *.db-shm
 backend/uploads/
 .env
+docs/user-manuals/

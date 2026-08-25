@@ -7,6 +7,7 @@ import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import ClientsTable from "@/components/tables/ClientsTable";
 import { Input } from "@/components/ui/input";
+import LoadingState from "@/components/ui/LoadingState";
 import { ClientSummary, listClients } from "@/lib/api";
 
 export default function StaffClientsPage() {
@@ -58,7 +59,7 @@ export default function StaffClientsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading clients...</p>
+        <LoadingState label="Loading clients..." />
       ) : (
         <ClientsTable clients={clients} readOnly />
       )}

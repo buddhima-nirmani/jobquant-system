@@ -32,7 +32,10 @@ def _to_response(user: User, assigned_jobs: int) -> StaffResponse:
 def _assigned_jobs_count(db: Session, staff_id: int) -> int:
     return (
         db.query(func.count(Job.id))
-        .filter(Job.assigned_staff_id == staff_id)
+        .filter(
+            Job.assigned_staff_id == staff_id,
+            Job.status.notin_(["Completed", "Cancelled"]),
+        )
         .scalar()
         or 0
     )

@@ -55,7 +55,7 @@ export default function GlobalSearch({ role }: Props) {
   const hasResults = jobs.length > 0 || clients.length > 0;
 
   return (
-    <div ref={containerRef} className="relative w-[420px]">
+    <div ref={containerRef} className="relative w-full max-w-[420px]">
       <Search
         size={18}
         className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]"
@@ -63,13 +63,14 @@ export default function GlobalSearch({ role }: Props) {
 
       <input
         placeholder="Search jobs, clients, invoices..."
+        aria-label="Search jobs, clients, invoices"
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        className="h-12 w-full rounded-full border border-[#E5E7EB] bg-[#FAFAFA] pl-11 pr-4 text-sm outline-none transition focus:border-[#FF6B00] focus:bg-white"
+        className="h-11 w-full rounded-full border border-[#E5E7EB] bg-[#FAFAFA] pl-11 pr-4 text-sm outline-none transition focus:border-[#FF6B00] focus:bg-white sm:h-12"
       />
 
       {open && query.trim() && (

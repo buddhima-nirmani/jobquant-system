@@ -55,8 +55,18 @@ export default function JobDetailView({
 
   if (error || !job) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-        {error || "Job not found."}
+      <div className="space-y-4">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error || "Job not found."}
+        </div>
+
+        <Link
+          href={basePath}
+          className="inline-flex items-center gap-2 text-sm font-medium text-[#FF6B00] hover:underline"
+        >
+          <ArrowLeft size={16} />
+          Back to Jobs
+        </Link>
       </div>
     );
   }

@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.payment import PaymentRejectRequest, PaymentResponse
 from app.services.access import check_job_access
 from app.services.notifications import notify
+from app.services.payments import paid_amount
 from app.services.storage import PAYMENT_SLIPS_DIR, DOCUMENT_ALLOWED_EXTENSIONS, resolve_path, save_file
 
 router = APIRouter(tags=["Payments"])
@@ -36,7 +37,14 @@ def _get_payment(payment_id: int, db: Session) -> Payment:
         raise HTTPException(status_code=404, detail="Payment not found.")
     return payment
 
-def _to_response(payment: Payment) -> PaymentResponse:
+def _to_response(payment: Payment, db: Session) -> PaymentResponse:
+    job_final_cost = payment.job.final_cost
+    outstanding = (
+        None
+        if job_final_cost is None
+        else round(job_final_cost - paid_amount(db, payment.job_id), 2)
+    )
+
     return PaymentResponse(
         id=payment.id,
         job_id=payment.job_id,
@@ -52,6 +60,8 @@ def _to_response(payment: Payment) -> PaymentResponse:
         verified_by=payment.verified_by,
         verified_at=payment.verified_at,
         created_at=payment.created_at,
+        has_slip=bool(payment.payment_slip_path),
+        outstanding_amount=outstanding,
     )
 
 @router.post(
@@ -72,6 +82,12 @@ def upload_payment_slip(
 
     if amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be greater than zero.")
+
+    if slip is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Please attach an image or PDF of the payment slip.",
+        )
 
     slip_path = None
     if slip is not None:
@@ -94,14 +110,15 @@ def upload_payment_slip(
             db,
             recipient,
             "payment",
-            f"Payment slip uploaded for {job.job_number}",
+            "Payment slip uploaded for {job_number}",
             link=f"/staff/jobs/{job.id}",
+            job_id=job.id,
         )
 
     db.commit()
     db.refresh(payment)
 
-    return _to_response(payment)
+    return _to_response(payment, db)
 
 @router.get("/api/payments", response_model=list[PaymentResponse])
 def list_payments(
@@ -132,7 +149,7 @@ def list_payments(
 
     payments = query.order_by(Payment.created_at.desc()).all()
 
-    return [_to_response(payment) for payment in payments]
+    return [_to_response(payment, db) for payment in payments]
 
 @router.get("/api/payments/{payment_id}", response_model=PaymentResponse)
 def get_payment(
@@ -143,7 +160,7 @@ def get_payment(
     payment = _get_payment(payment_id, db)
     check_job_access(payment.job, current_user)
 
-    return _to_response(payment)
+    return _to_response(payment, db)
 
 @router.get("/api/payments/{payment_id}/slip")
 def get_payment_slip(
@@ -179,14 +196,15 @@ def verify_payment(
         db,
         payment.client_id,
         "payment",
-        f"Your payment for {payment.job.job_number} was verified",
+        "Your payment for {job_number} was verified",
         link=f"/portal/orders/{payment.job_id}",
+        job_id=payment.job_id,
     )
 
     db.commit()
     db.refresh(payment)
 
-    return _to_response(payment)
+    return _to_response(payment, db)
 
 @router.post("/api/payments/{payment_id}/reject", response_model=PaymentResponse)
 def reject_payment(
@@ -210,14 +228,15 @@ def reject_payment(
         db,
         payment.client_id,
         "payment",
-        f"Your payment for {payment.job.job_number} was rejected",
+        "Your payment for {job_number} was rejected",
         link=f"/portal/orders/{payment.job_id}",
+        job_id=payment.job_id,
     )
 
     db.commit()
     db.refresh(payment)
 
-    return _to_response(payment)
+    return _to_response(payment, db)
 
 
 @router.delete("/api/payments/{payment_id}")
@@ -233,6 +252,12 @@ def delete_payment(
         raise HTTPException(
             status_code=403,
             detail="You can only delete a payment record you uploaded.",
+        )
+
+    if current_user.role == "client" and payment.status == "Verified":
+        raise HTTPException(
+            status_code=403,
+            detail="This payment has already been verified and can no longer be deleted.",
         )
 
     db.delete(payment)

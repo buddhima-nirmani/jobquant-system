@@ -35,7 +35,6 @@ export default function ProfileDropdown({
   const basePath = BASE_PATH[role];
 
   async function handleLogout() {
-    localStorage.removeItem("jobquant_user");
     await logout();
   }
 

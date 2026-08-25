@@ -22,6 +22,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#EAEAEA] bg-white shadow-sm">
+      <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="border-b border-[#EEF2F7] bg-[#FAFAFA]">
           <tr>
@@ -90,6 +91,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

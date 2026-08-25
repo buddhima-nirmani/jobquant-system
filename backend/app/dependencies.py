@@ -7,11 +7,25 @@ from app.models.user import User
 from app.services.auth import ALGORITHM, SECRET_KEY
 
 
+def _extract_token(request: Request) -> str | None:
+    """Each browser tab holds its own session in sessionStorage and sends it
+    as a Bearer token — this is what lets Admin/Staff/Client be logged in
+    simultaneously in different tabs of the same browser, which a shared
+    cookie could never do."""
+
+    auth_header = request.headers.get("authorization")
+
+    if auth_header and auth_header.lower().startswith("bearer "):
+        return auth_header[7:].strip()
+
+    return None
+
+
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db),
 ) -> User:
-    token = request.cookies.get("jobquant_token")
+    token = _extract_token(request)
 
     if not token:
         raise HTTPException(

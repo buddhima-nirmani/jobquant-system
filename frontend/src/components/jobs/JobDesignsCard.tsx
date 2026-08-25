@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, Download, ImagePlus, MessageSquare, Pencil, Trash2, X } from "lucide-react";
+import { Check, CornerDownRight, Download, ImagePlus, MessageSquare, Pencil, Reply, Trash2, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingState from "@/components/ui/LoadingState";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +30,17 @@ import {
   editDesignComment,
   listDesignComments,
   listDesignVersions,
-  requestDesignRevision,
+  openAuthenticatedFile,
   uploadDesignVersion,
 } from "@/lib/api";
+import { parseApiDate } from "@/lib/format";
 import type { ViewerRole } from "./JobDetailView";
+
+const roleBadgeStyles: Record<string, string> = {
+  admin: "bg-[#F5F3FF] text-[#7C3AED]",
+  staff: "bg-[#EFF6FF] text-[#2563EB]",
+  client: "bg-[#ECFDF5] text-[#16A34A]",
+};
 
 export default function JobDesignsCard({
   jobId,
@@ -55,7 +63,20 @@ export default function JobDesignsCard({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [replyingToId, setReplyingToId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [fileError, setFileError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleOpenFile(versionId: number, variant: "watermarked" | "original") {
+    setFileError("");
+    try {
+      await openAuthenticatedFile(designFileUrl(versionId, variant));
+    } catch (err) {
+      setFileError(err instanceof Error ? err.message : "Unable to open this file.");
+    }
+  }
 
   const latestVersion = versions[versions.length - 1] ?? null;
 
@@ -116,18 +137,14 @@ export default function JobDesignsCard({
     }
   }
 
-  async function handleAddComment(isRevisionRequest: boolean) {
+  async function handleAddComment() {
     if (!latestVersion || !commentText.trim()) return;
 
     setIsSubmittingComment(true);
     setActionError("");
 
     try {
-      if (isRevisionRequest) {
-        await requestDesignRevision(latestVersion.id, commentText.trim());
-      } else {
-        await addDesignComment(latestVersion.id, commentText.trim());
-      }
+      await addDesignComment(latestVersion.id, commentText.trim());
       setCommentText("");
       await refetch();
     } catch (err) {
@@ -136,6 +153,24 @@ export default function JobDesignsCard({
       );
     } finally {
       setIsSubmittingComment(false);
+    }
+  }
+
+  async function handleAddReply(parentId: number) {
+    if (!latestVersion || !replyText.trim()) return;
+
+    setIsSubmittingReply(true);
+    setActionError("");
+
+    try {
+      await addDesignComment(latestVersion.id, replyText.trim(), parentId);
+      setReplyText("");
+      setReplyingToId(null);
+      await refetch();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to submit reply.");
+    } finally {
+      setIsSubmittingReply(false);
     }
   }
 
@@ -162,6 +197,154 @@ export default function JobDesignsCard({
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Unable to delete comment.", "error");
     }
+  }
+
+  const topLevelComments = comments.filter((comment) => !comment.parent_id);
+
+  function findRootId(comment: DesignCommentResponse): number {
+    let current = comment;
+    while (current.parent_id) {
+      const parent = comments.find((candidate) => candidate.id === current.parent_id);
+      if (!parent) break;
+      current = parent;
+    }
+    return current.id;
+  }
+
+  const repliesByRoot = new Map<number, DesignCommentResponse[]>();
+  comments.forEach((comment) => {
+    if (!comment.parent_id) return;
+    const rootId = findRootId(comment);
+    if (!repliesByRoot.has(rootId)) repliesByRoot.set(rootId, []);
+    repliesByRoot.get(rootId)!.push(comment);
+  });
+
+  function renderComment(comment: DesignCommentResponse, isReply: boolean) {
+    return (
+      <div
+        key={comment.id}
+        className={`rounded-lg bg-[#FAFBFC] px-4 py-3 text-sm ${isReply ? "ml-6 border-l-2 border-[#EAEAEA]" : ""}`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-semibold text-[#0F172A]">
+            {isReply && (
+              <CornerDownRight size={12} className="mr-1 inline text-[#94A3B8]" />
+            )}
+            {comment.user_name}{" "}
+            <span
+              className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase ${
+                roleBadgeStyles[comment.user_role] ?? "bg-[#EAEAEA] text-[#64748B]"
+              }`}
+            >
+              {comment.user_role}
+            </span>
+            {comment.is_revision_request && (
+              <span className="ml-2 text-[10px] font-medium uppercase text-[#DC2626]">
+                Revision Request
+              </span>
+            )}
+            {comment.updated_at && (
+              <span className="ml-2 text-[10px] italic text-[#94A3B8]">
+                (edited)
+              </span>
+            )}
+          </p>
+
+          {editingId !== comment.id && (
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setReplyingToId(replyingToId === comment.id ? null : comment.id);
+                  setReplyText("");
+                }}
+                className="rounded p-1 hover:bg-[#EAEAEA]"
+                aria-label="Reply to comment"
+              >
+                <Reply size={13} className="text-[#64748B]" />
+              </button>
+              {comment.can_edit && (
+                <button
+                  type="button"
+                  onClick={() => startEdit(comment)}
+                  className="rounded p-1 hover:bg-[#EAEAEA]"
+                  aria-label="Edit comment"
+                >
+                  <Pencil size={13} className="text-[#64748B]" />
+                </button>
+              )}
+              {comment.can_delete && (
+                <ConfirmDialog
+                  trigger={
+                    <button
+                      type="button"
+                      className="rounded p-1 hover:bg-red-50"
+                      aria-label="Delete comment"
+                    >
+                      <Trash2 size={13} className="text-red-500" />
+                    </button>
+                  }
+                  title="Delete this comment?"
+                  description="This cannot be undone."
+                  confirmLabel="Delete"
+                  onConfirm={() => handleDeleteComment(comment.id)}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        {editingId === comment.id ? (
+          <div className="mt-2 space-y-2">
+            <Input
+              value={editingText}
+              onChange={(event) => setEditingText(event.target.value)}
+              className="h-9 text-sm"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => saveEdit(comment.id)}>
+                <Check size={13} className="mr-1" />
+                Save
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                <X size={13} className="mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-1 text-[#334155]">{comment.comment}</p>
+        )}
+
+        {replyingToId === comment.id && (
+          <div className="mt-3 space-y-2">
+            <Textarea
+              placeholder={`Reply to ${comment.user_name}...`}
+              value={replyText}
+              onChange={(event) => setReplyText(event.target.value)}
+              className="min-h-16 text-sm"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => handleAddReply(comment.id)}
+                disabled={isSubmittingReply || !replyText.trim()}
+              >
+                {isSubmittingReply ? "Sending..." : "Send Reply"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setReplyingToId(null)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -195,7 +378,7 @@ export default function JobDesignsCard({
         </div>
 
         {loading && (
-          <p className="mt-4 text-sm text-[#94A3B8]">Loading designs...</p>
+          <LoadingState label="Loading designs..." className="mt-4" />
         )}
 
         {error && (
@@ -221,37 +404,35 @@ export default function JobDesignsCard({
 
               <p className="mt-1 text-xs text-[#94A3B8]">
                 Uploaded by {version.uploaded_by_name} on{" "}
-                {new Date(version.uploaded_at).toLocaleDateString()}
+                {parseApiDate(version.uploaded_at).toLocaleDateString()}
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={designFileUrl(version.id, "watermarked")}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => handleOpenFile(version.id, "watermarked")}
                   className="text-xs font-medium text-[#FF6B00] hover:underline"
                 >
                   View Preview
-                </a>
+                </button>
 
                 {version.has_original_access && (
-                  <a
-                    href={designFileUrl(version.id, "original")}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => handleOpenFile(version.id, "original")}
                     className="inline-flex items-center gap-1 text-xs font-medium text-[#0F172A] hover:underline"
                   >
                     <Download size={12} />
                     Final File
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
           ))}
         </div>
 
-        {actionError && (
-          <p className="mt-4 text-sm text-red-600">{actionError}</p>
+        {(actionError || fileError) && (
+          <p className="mt-4 text-sm text-red-600">{actionError || fileError}</p>
         )}
 
         {latestVersion && (
@@ -268,83 +449,13 @@ export default function JobDesignsCard({
                 <p className="text-sm text-[#94A3B8]">No comments yet.</p>
               )}
 
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="rounded-lg bg-[#FAFBFC] px-4 py-3 text-sm"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-[#0F172A]">
-                      {comment.user_name}{" "}
-                      <span className="ml-1 rounded bg-[#EAEAEA] px-1.5 py-0.5 text-[10px] font-medium uppercase text-[#64748B]">
-                        {comment.user_role}
-                      </span>
-                      {comment.is_revision_request && (
-                        <span className="ml-2 text-[10px] font-medium uppercase text-[#DC2626]">
-                          Revision Request
-                        </span>
-                      )}
-                      {comment.updated_at && (
-                        <span className="ml-2 text-[10px] italic text-[#94A3B8]">
-                          (edited)
-                        </span>
-                      )}
-                    </p>
-
-                    {editingId !== comment.id && (comment.can_edit || comment.can_delete) && (
-                      <div className="flex shrink-0 items-center gap-1">
-                        {comment.can_edit && (
-                          <button
-                            type="button"
-                            onClick={() => startEdit(comment)}
-                            className="rounded p-1 hover:bg-[#EAEAEA]"
-                            aria-label="Edit comment"
-                          >
-                            <Pencil size={13} className="text-[#64748B]" />
-                          </button>
-                        )}
-                        {comment.can_delete && (
-                          <ConfirmDialog
-                            trigger={
-                              <button
-                                type="button"
-                                className="rounded p-1 hover:bg-red-50"
-                                aria-label="Delete comment"
-                              >
-                                <Trash2 size={13} className="text-red-500" />
-                              </button>
-                            }
-                            title="Delete this comment?"
-                            description="This cannot be undone."
-                            confirmLabel="Delete"
-                            onConfirm={() => handleDeleteComment(comment.id)}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {editingId === comment.id ? (
-                    <div className="mt-2 space-y-2">
-                      <Input
-                        value={editingText}
-                        onChange={(event) => setEditingText(event.target.value)}
-                        className="h-9 text-sm"
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => saveEdit(comment.id)}>
-                          <Check size={13} className="mr-1" />
-                          Save
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
-                          <X size={13} className="mr-1" />
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="mt-1 text-[#334155]">{comment.comment}</p>
-                  )}
+              {topLevelComments.map((comment) => (
+                <div key={comment.id} className="space-y-2">
+                  {renderComment(comment, false)}
+                  {(repliesByRoot.get(comment.id) ?? [])
+                    .slice()
+                    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                    .map((reply) => renderComment(reply, true))}
                 </div>
               ))}
             </div>
@@ -361,7 +472,7 @@ export default function JobDesignsCard({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleAddComment(false)}
+                  onClick={handleAddComment}
                   disabled={isSubmittingComment || !commentText.trim()}
                 >
                   Send Comment
@@ -369,25 +480,13 @@ export default function JobDesignsCard({
 
                 {viewerRole === "client" &&
                   latestVersion.status !== "Approved" && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddComment(true)}
-                        disabled={isSubmittingComment || !commentText.trim()}
-                        variant="outline"
-                        className="border-red-200 text-red-600 hover:bg-red-50"
-                      >
-                        Request Revision
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={handleApprove}
-                        className="bg-[#16A34A] hover:bg-[#15803D]"
-                      >
-                        Approve Design
-                      </Button>
-                    </>
+                    <Button
+                      size="sm"
+                      onClick={handleApprove}
+                      className="bg-[#16A34A] hover:bg-[#15803D]"
+                    >
+                      Approve Design
+                    </Button>
                   )}
               </div>
             </div>

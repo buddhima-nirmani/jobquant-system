@@ -23,7 +23,7 @@ export default function EditStaffPage() {
 
         <PageHeader
           title="Edit Staff"
-          description={`Update information for staff member #${staffId}.`}
+          description="Update this staff member's account information."
         />
       </div>
 

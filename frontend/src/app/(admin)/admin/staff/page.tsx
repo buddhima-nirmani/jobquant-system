@@ -6,9 +6,11 @@ import Link from "next/link";
 import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import StaffTable from "@/components/tables/StaffTable";
+import StaffExportButton from "@/components/staff/StaffExportButton";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { StaffSummary, listStaff } from "@/lib/api";
 
@@ -59,26 +61,30 @@ export default function StaffPage() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative max-w-md flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="relative min-w-0 max-w-md sm:flex-1">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search staff..."
-            className="h-11 rounded-xl pl-10"
+            className="h-11 w-full rounded-xl pl-10"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
 
-        <Button
-          asChild
-          className="h-11 shrink-0 rounded-xl bg-[#FF6B00] px-5 hover:bg-[#E65C00]"
-        >
-          <Link href="/admin/staff/create" className="flex items-center gap-2">
-            <Plus size={18} />
-            Add Staff
-          </Link>
-        </Button>
+        <div className="flex shrink-0 items-center gap-3">
+          <StaffExportButton staff={staff} />
+
+          <Button
+            asChild
+            className="h-11 shrink-0 rounded-xl bg-[#FF6B00] px-5 hover:bg-[#E65C00]"
+          >
+            <Link href="/admin/staff/create" className="flex items-center gap-2">
+              <Plus size={18} />
+              Add Staff
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -88,7 +94,7 @@ export default function StaffPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading staff...</p>
+        <LoadingState label="Loading staff..." />
       ) : (
         <StaffTable staff={staff} onChanged={refetch} />
       )}

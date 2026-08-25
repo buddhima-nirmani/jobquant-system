@@ -4,12 +4,29 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import PageHeader from "@/components/layouts/PageHeader";
+import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import JobsTable from "@/components/tables/JobsTable";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { JobListItem, listJobs } from "@/lib/api";
+
+import {
+  Briefcase,
+  Clock3,
+  Hammer,
+  CircleCheckBig,
+} from "lucide-react";
+
+const IN_PROGRESS_STATUSES = [
+  "Design",
+  "Awaiting Client Approval",
+  "Approved",
+  "Production",
+  "Ready for Delivery",
+];
 
 export default function StaffJobsPage() {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
@@ -33,6 +50,13 @@ export default function StaffJobsPage() {
     return () => clearTimeout(timeout);
   }, [search]);
 
+  const total = jobs.length;
+  const pending = jobs.filter((job) => job.status === "Pending").length;
+  const inProgress = jobs.filter((job) =>
+    IN_PROGRESS_STATUSES.includes(job.status)
+  ).length;
+  const completed = jobs.filter((job) => job.status === "Completed").length;
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -40,10 +64,36 @@ export default function StaffJobsPage() {
         description="Create and manage assigned printing jobs."
       />
 
-      <div className="flex items-center justify-between">
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <DashboardStatCard
+          title="Total Jobs"
+          value={String(total)}
+          icon={Briefcase}
+        />
+
+        <DashboardStatCard
+          title="Pending"
+          value={String(pending)}
+          icon={Clock3}
+        />
+
+        <DashboardStatCard
+          title="In Progress"
+          value={String(inProgress)}
+          icon={Hammer}
+        />
+
+        <DashboardStatCard
+          title="Completed"
+          value={String(completed)}
+          icon={CircleCheckBig}
+        />
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           placeholder="Search by Job ID, Job Name or Client..."
-          className="h-11 w-[360px]"
+          className="h-11 w-full sm:w-[360px]"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -60,7 +110,7 @@ export default function StaffJobsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading jobs...</p>
+        <LoadingState label="Loading jobs..." />
       ) : (
         <JobsTable jobs={jobs} basePath="/staff/jobs" />
       )}

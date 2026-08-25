@@ -31,3 +31,6 @@ joblib
 pandas
 scikit-learn
 Pillow
+python-dotenv
+reportlab
+slowapi

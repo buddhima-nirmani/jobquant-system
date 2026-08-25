@@ -6,6 +6,7 @@ import PageHeader from "@/components/layouts/PageHeader";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 import QuickActions from "@/components/dashboard/QuickActions";
+import LoadingState from "@/components/ui/LoadingState";
 
 import {
   ClipboardList,
@@ -37,7 +38,7 @@ export default function StaffDashboardPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-[#94A3B8]">Loading dashboard...</p>;
+    return <LoadingState label="Loading dashboard..." />;
   }
 
   if (error || !data) {

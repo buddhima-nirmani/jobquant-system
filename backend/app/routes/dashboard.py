@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, or_
@@ -177,6 +177,7 @@ def admin_dashboard(
     recent_jobs = (
         db.query(Job)
         .options(joinedload(Job.client), joinedload(Job.assigned_staff))
+        .filter(Job.status.notin_(["Completed", "Cancelled"]))
         .order_by(Job.created_at.desc())
         .limit(5)
         .all()
@@ -290,7 +291,7 @@ def staff_dashboard(
     recent_jobs = (
         db.query(Job)
         .options(joinedload(Job.client), joinedload(Job.assigned_staff))
-        .filter(base_filter)
+        .filter(base_filter, Job.status.notin_(["Completed", "Cancelled"]))
         .order_by(Job.created_at.desc())
         .limit(5)
         .all()
@@ -343,9 +344,24 @@ def client_dashboard(
         or 0.0
     )
 
+    today = date.today()
+    month_start = datetime(today.year, today.month, 1)
+    paid_this_month = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0.0))
+        .join(Job, Payment.job_id == Job.id)
+        .filter(
+            base_filter,
+            Payment.status == "Verified",
+            Payment.verified_at >= month_start,
+        )
+        .scalar()
+        or 0.0
+    )
+
     return ClientDashboard(
         active_orders=active_orders,
         completed_orders=completed_orders,
         pending_design_approvals=pending_design_approvals,
         outstanding_payments=round(total_final_cost - verified_paid, 2),
+        paid_this_month=round(paid_this_month, 2),
     )

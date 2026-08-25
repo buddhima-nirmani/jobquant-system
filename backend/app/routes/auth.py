@@ -1,12 +1,13 @@
 import secrets
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.password_reset import PasswordResetToken
+from app.rate_limit import limiter
 from app.models.user import User
 from app.schemas.user import (
     ChangePasswordRequest,
@@ -24,6 +25,7 @@ from app.services.auth import (
     verify_password,
     create_access_token,
 )
+from app.services.email import is_email_configured, send_password_reset_email
 
 
 router = APIRouter(
@@ -74,9 +76,10 @@ def register(
     "/login",
     response_model=TokenResponse,
 )
+@limiter.limit("10/minute")
 def login(
+    request: Request,
     login_data: UserLogin,
-    response: Response,
     db: Session = Depends(get_db),
 ):
     user = (
@@ -111,15 +114,9 @@ def login(
         user.role,
     )
 
-    response.set_cookie(
-        key="jobquant_token",
-        value=token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=60 * 60 * 24,
-        path="/",
-    )
+    # No cookie is set: the token lives in the browser tab's sessionStorage
+    # (see frontend lib/api.ts) and is sent as an Authorization header, so
+    # each tab can hold an independent session.
 
     return {
         "access_token": token,
@@ -172,7 +169,9 @@ def update_me(
     "/forgot-password",
     response_model=ForgotPasswordResponse,
 )
+@limiter.limit("5/minute")
 def forgot_password(
+    request: Request,
     payload: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
@@ -194,18 +193,28 @@ def forgot_password(
     )
     db.commit()
 
+    if is_email_configured():
+        try:
+            send_password_reset_email(user.email, token)
+            return ForgotPasswordResponse(
+                message="If that email is registered, a password reset link has been sent to it.",
+            )
+        except Exception:
+            # Fall through to the dev-mode link below rather than leaving
+            # the user stuck if the SMTP server is unreachable/misconfigured.
+            pass
+
     return ForgotPasswordResponse(
-        message=(
-            "Reset link generated. No email service is configured yet, so "
-            "it's shown here directly — it expires in 30 minutes."
-        ),
+        message="Here's your password reset link. It expires in 30 minutes.",
         reset_token=token,
         reset_url=f"/reset-password?token={token}",
     )
 
 
 @router.post("/reset-password")
+@limiter.limit("10/minute")
 def reset_password(
+    request: Request,
     payload: ResetPasswordRequest,
     db: Session = Depends(get_db),
 ):

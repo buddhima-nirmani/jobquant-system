@@ -46,8 +46,9 @@ def upload_invoice(
         db,
         job.client_id,
         "invoice",
-        f"Invoice available for {job.job_number}",
+        "Invoice available for {job_number}",
         link=f"/portal/orders/{job.id}",
+        job_id=job.id,
     )
 
     db.commit()

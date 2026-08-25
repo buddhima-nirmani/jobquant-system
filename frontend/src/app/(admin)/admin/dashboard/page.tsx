@@ -8,6 +8,7 @@ import DashboardOverviewChart from "@/components/dashboard/DashboardOverviewChar
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentJobs from "@/components/dashboard/RecentJobs";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { ClipboardList, Users, UserRoundCog, WalletCards } from "lucide-react";
 
@@ -38,7 +39,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-[#94A3B8]">Loading dashboard...</p>;
+    return <LoadingState label="Loading dashboard..." />;
   }
 
   if (error || !data) {

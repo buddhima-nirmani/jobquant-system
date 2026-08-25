@@ -15,7 +15,7 @@ import {
   Mail,
 } from "lucide-react";
 
-import { API_URL } from "@/lib/api";
+import { API_URL, setToken } from "@/lib/api";
 import { ROLE_HOME_ROUTE } from "@/lib/auth";
 
 type LoginResponse = {
@@ -48,7 +48,6 @@ export default function LoginForm() {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -68,12 +67,9 @@ export default function LoginForm() {
 
       const loginData = data as LoginResponse;
 
-      // Store only non-sensitive user information.
-      // The JWT is stored in the HTTP-only cookie by FastAPI.
-      localStorage.setItem(
-        "jobquant_user",
-        JSON.stringify(loginData.user)
-      );
+      // Stored in sessionStorage (not localStorage) so each browser tab
+      // keeps its own independent session.
+      setToken(loginData.access_token);
 
       router.push(
         ROLE_HOME_ROUTE[loginData.user.role as keyof typeof ROLE_HOME_ROUTE] ??

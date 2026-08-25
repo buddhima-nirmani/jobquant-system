@@ -1,19 +1,58 @@
-// IMPORTANT: use the same hostname ("localhost") the frontend itself is
-// served from. The backend's auth cookie is SameSite=Lax; browsers treat
-// "localhost" and "127.0.0.1" as different sites, so mixing them silently
-// drops the cookie on every fetch() call after login.
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// ---------------------------------------------------------------------------
+// Per-tab session token
+// ---------------------------------------------------------------------------
+//
+// The session lives in sessionStorage (not a cookie) and is sent as a Bearer
+// token on every request. sessionStorage is isolated per browser tab, so
+// Admin/Staff/Client can each be logged in at once in different tabs of the
+// same browser — a shared cookie can't do that (logging into a second role
+// in one tab would silently swap the identity used by every other tab).
+
+const TOKEN_KEY = "jobquant_token";
+
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.sessionStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token: string): void {
+  try {
+    window.sessionStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    // sessionStorage unavailable (e.g. private browsing) — the session just
+    // won't survive a reload, but the current page keeps working.
+  }
+}
+
+export function clearToken(): void {
+  try {
+    window.sessionStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const response = await fetch(`${API_URL}${endpoint}`, {
-    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
       ...(options.headers || {}),
     },
   });
@@ -38,7 +77,7 @@ async function apiUpload<T>(
 ): Promise<T> {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
-    credentials: "include",
+    headers: authHeaders(),
     body: formData,
   });
 
@@ -193,6 +232,7 @@ export type DesignCommentResponse = {
   user_role: string;
   comment: string;
   is_revision_request: boolean;
+  parent_id: number | null;
   created_at: string;
   updated_at: string | null;
   can_edit: boolean;
@@ -214,6 +254,8 @@ export type PaymentResponse = {
   verified_by: number | null;
   verified_at: string | null;
   created_at: string;
+  has_slip: boolean;
+  outstanding_amount: number | null;
 };
 
 export type InvoiceResponse = {
@@ -281,6 +323,7 @@ export type ClientDashboard = {
   completed_orders: number;
   pending_design_approvals: number;
   outstanding_payments: number;
+  paid_this_month: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -481,10 +524,14 @@ export function listDesignComments(versionId: number) {
   return apiRequest<DesignCommentResponse[]>(`/api/designs/${versionId}/comments`);
 }
 
-export function addDesignComment(versionId: number, comment: string) {
+export function addDesignComment(
+  versionId: number,
+  comment: string,
+  parentId: number | null = null
+) {
   return apiRequest<DesignCommentResponse>(`/api/designs/${versionId}/comments`, {
     method: "POST",
-    body: JSON.stringify({ comment, is_revision_request: false }),
+    body: JSON.stringify({ comment, is_revision_request: false, parent_id: parentId }),
   });
 }
 
@@ -682,4 +729,46 @@ export function updateProfile(payload: {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Authenticated file access
+// ---------------------------------------------------------------------------
+//
+// Design files, payment slips and invoices are private — a plain <a href>
+// can't attach the Authorization header, so viewing/downloading them goes
+// through an authenticated fetch instead, using whichever tab's session is
+// making the request.
+
+async function fetchAuthenticatedBlob(url: string): Promise<Blob> {
+  const response = await fetch(url, { headers: authHeaders() });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.detail || "Unable to load this file.");
+  }
+
+  return response.blob();
+}
+
+export async function openAuthenticatedFile(url: string): Promise<void> {
+  const blob = await fetchAuthenticatedBlob(url);
+  const blobUrl = URL.createObjectURL(blob);
+  window.open(blobUrl, "_blank");
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+}
+
+export async function downloadAuthenticatedFile(
+  url: string,
+  filename: string
+): Promise<void> {
+  const blob = await fetchAuthenticatedBlob(url);
+  const blobUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
 }

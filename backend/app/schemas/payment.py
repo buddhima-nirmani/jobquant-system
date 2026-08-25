@@ -23,6 +23,8 @@ class PaymentResponse(BaseModel):
     verified_by: int | None
     verified_at: datetime | None
     created_at: datetime
+    has_slip: bool
+    outstanding_amount: float | None
 
 
 class PaymentRejectRequest(BaseModel):

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Sparkles } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { activityIcons } from "@/components/dashboard/RecentActivity";
+import LoadingState from "@/components/ui/LoadingState";
 import {
   NotificationResponse,
   listNotifications,
@@ -19,6 +21,10 @@ import {
   markNotificationRead,
 } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/format";
+
+function notificationIcon(type: string) {
+  return activityIcons[type as keyof typeof activityIcons] ?? Sparkles;
+}
 
 type Props = {
   children: React.ReactNode;
@@ -73,7 +79,7 @@ export default function NotificationDropdown({ children, onUnreadChange }: Props
         <DropdownMenuSeparator />
 
         {loading && (
-          <p className="px-4 py-4 text-sm text-[#94A3B8]">Loading...</p>
+          <LoadingState className="px-4 py-4" />
         )}
 
         {!loading && notifications.length === 0 && (
@@ -81,31 +87,45 @@ export default function NotificationDropdown({ children, onUnreadChange }: Props
         )}
 
         <div className="max-h-80 overflow-y-auto">
-          {notifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className="cursor-pointer items-start gap-2 py-3"
-              onSelect={() => handleSelect(notification)}
-            >
-              <span
-                className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                  notification.is_read ? "bg-transparent" : "bg-[#FF6B00]"
-                }`}
-              />
-              <div>
-                <p
-                  className={`font-medium ${
-                    notification.is_read ? "text-[#64748B]" : "text-[#0F172A]"
+          {notifications.map((notification) => {
+            const Icon = notificationIcon(notification.type);
+
+            return (
+              <DropdownMenuItem
+                key={notification.id}
+                className="cursor-pointer items-start gap-3 py-3"
+                onSelect={() => handleSelect(notification)}
+              >
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    notification.is_read ? "bg-[#F8FAFC]" : "bg-[#FFF2E8]"
                   }`}
                 >
-                  {notification.title}
-                </p>
-                <p className="text-xs text-[#94A3B8]">
-                  {formatRelativeTime(notification.created_at)}
-                </p>
-              </div>
-            </DropdownMenuItem>
-          ))}
+                  <Icon
+                    size={16}
+                    className={notification.is_read ? "text-[#94A3B8]" : "text-[#FF6B00]"}
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`font-medium ${
+                      notification.is_read ? "text-[#64748B]" : "text-[#0F172A]"
+                    }`}
+                  >
+                    {notification.title}
+                  </p>
+                  <p className="text-xs text-[#94A3B8]">
+                    {formatRelativeTime(notification.created_at)}
+                  </p>
+                </div>
+
+                {!notification.is_read && (
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF6B00]" />
+                )}
+              </DropdownMenuItem>
+            );
+          })}
         </div>
 
         <DropdownMenuSeparator />

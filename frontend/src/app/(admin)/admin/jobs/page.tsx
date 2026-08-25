@@ -9,6 +9,7 @@ import JobsTable from "@/components/tables/JobsTable";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { JobListItem, deleteJob, listJobs } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -78,7 +79,7 @@ export default function JobsPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
           title="Total Jobs"
           value={String(total)}
@@ -105,10 +106,10 @@ export default function JobsPage() {
       </div>
 
       {/* Search and Create Job */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           placeholder="Search by Job ID, Job Name or Client..."
-          className="h-11 w-[360px]"
+          className="h-11 w-full sm:w-[360px]"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -131,7 +132,7 @@ export default function JobsPage() {
 
       {/* Jobs Table */}
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading jobs...</p>
+        <LoadingState label="Loading jobs..." />
       ) : (
         <JobsTable jobs={jobs} basePath="/admin/jobs" onDelete={handleDelete} />
       )}

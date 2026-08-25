@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { CurrentUser, getCurrentUser } from "@/lib/auth";
 import { updateProfile } from "@/lib/api";
@@ -51,7 +52,7 @@ export default function ProfilePageContent() {
   }
 
   if (loading) {
-    return <p className="text-sm text-[#94A3B8]">Loading profile...</p>;
+    return <LoadingState label="Loading profile..." />;
   }
 
   return (

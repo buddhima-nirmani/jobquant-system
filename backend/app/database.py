@@ -62,6 +62,23 @@ def run_startup_migrations() -> None:
                     text("ALTER TABLE design_comments ADD COLUMN updated_at DATETIME")
                 )
 
+        if "parent_id" not in comment_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text("ALTER TABLE design_comments ADD COLUMN parent_id INTEGER")
+                )
+
+    if "notifications" in table_names:
+        notification_columns = {
+            column["name"] for column in inspector.get_columns("notifications")
+        }
+
+        if "job_id" not in notification_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text("ALTER TABLE notifications ADD COLUMN job_id INTEGER")
+                )
+
     if "users" not in table_names:
         return
 

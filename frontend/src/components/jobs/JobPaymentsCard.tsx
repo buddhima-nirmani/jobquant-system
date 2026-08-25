@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import RejectPaymentDialog from "@/components/payments/RejectPaymentDialog";
+import LoadingState from "@/components/ui/LoadingState";
 import { useToast } from "@/components/ui/toast";
 
 import {
@@ -15,13 +17,14 @@ import {
   PaymentResponse,
   deletePayment,
   listPayments,
+  openAuthenticatedFile,
   paymentSlipUrl,
   rejectPayment,
   uploadPaymentSlip,
   verifyPayment,
 } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, parseApiDate } from "@/lib/format";
 import type { ViewerRole } from "./JobDetailView";
 
 function clientLabel(status: string, viewerRole: ViewerRole) {
@@ -74,6 +77,11 @@ export default function JobPaymentsCard({
       return;
     }
 
+    if (!selectedFile) {
+      setActionError("Please attach an image or PDF of the payment slip.");
+      return;
+    }
+
     setIsSubmitting(true);
     setActionError("");
 
@@ -103,10 +111,7 @@ export default function JobPaymentsCard({
     }
   }
 
-  async function handleReject(paymentId: number) {
-    const reason = window.prompt("Reason for rejecting this payment:");
-    if (!reason) return;
-
+  async function handleReject(paymentId: number, reason: string) {
     setActionError("");
     try {
       await rejectPayment(paymentId, reason);
@@ -128,13 +133,22 @@ export default function JobPaymentsCard({
     }
   }
 
+  async function handleOpenSlip(paymentId: number) {
+    setActionError("");
+    try {
+      await openAuthenticatedFile(paymentSlipUrl(paymentId));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to open this file.");
+    }
+  }
+
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardContent className="p-6">
         <h2 className="text-lg font-semibold text-[#0F172A]">Payments</h2>
 
         {loading && (
-          <p className="mt-4 text-sm text-[#94A3B8]">Loading payments...</p>
+          <LoadingState label="Loading payments..." className="mt-4" />
         )}
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
@@ -154,7 +168,7 @@ export default function JobPaymentsCard({
                 </p>
                 <p className="text-xs text-[#94A3B8]">
                   {payment.payment_method ?? "—"} · Uploaded by {payment.uploaded_by_name} ·{" "}
-                  {new Date(payment.created_at).toLocaleDateString()}
+                  {parseApiDate(payment.created_at).toLocaleDateString()}
                 </p>
                 {payment.status === "Rejected" && payment.rejection_reason && (
                   <p className="mt-1 text-xs text-red-600">
@@ -166,14 +180,15 @@ export default function JobPaymentsCard({
               <div className="flex items-center gap-2">
                 <StatusBadge status={clientLabel(payment.status, viewerRole)} />
 
-                <a
-                  href={paymentSlipUrl(payment.id)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#0F172A] hover:underline"
-                >
-                  <Download size={12} /> Slip
-                </a>
+                {payment.has_slip && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenSlip(payment.id)}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[#0F172A] hover:underline"
+                  >
+                    <Download size={12} /> Slip
+                  </button>
+                )}
 
                 {canManage && payment.status === "Pending" && (
                   <>
@@ -184,18 +199,23 @@ export default function JobPaymentsCard({
                     >
                       Verify
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReject(payment.id)}
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                    >
-                      Reject
-                    </Button>
+                    <RejectPaymentDialog
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          Reject
+                        </Button>
+                      }
+                      onConfirm={(reason) => handleReject(payment.id, reason)}
+                    />
                   </>
                 )}
 
-                {currentUserId === payment.uploaded_by && (
+                {currentUserId === payment.uploaded_by &&
+                  !(viewerRole === "client" && payment.status === "Verified") && (
                   <ConfirmDialog
                     trigger={
                       <button
@@ -243,6 +263,15 @@ export default function JobPaymentsCard({
                 onChange={(event) => setMethod(event.target.value)}
                 className="h-10 w-48"
               />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-10 border-[#FF6B00] text-[#FF6B00] hover:bg-[#FFF2E8]"
+              >
+                {selectedFile ? selectedFile.name : "Choose File"}
+                {!selectedFile && <span className="ml-1 text-red-500">*</span>}
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -250,7 +279,7 @@ export default function JobPaymentsCard({
                 onChange={(event) =>
                   setSelectedFile(event.target.files?.[0] ?? null)
                 }
-                className="text-sm"
+                className="hidden"
               />
               <Button
                 onClick={handleUploadSlip}
@@ -260,6 +289,10 @@ export default function JobPaymentsCard({
                 {isSubmitting ? "Uploading..." : "Upload Slip"}
               </Button>
             </div>
+
+            <p className="text-xs text-[#94A3B8]">
+              * An image or PDF of the payment slip is required.
+            </p>
           </div>
         )}
       </CardContent>

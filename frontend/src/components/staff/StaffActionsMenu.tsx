@@ -56,7 +56,7 @@ export default function StaffActionsMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-slate-100">
+        <button className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-slate-100">
           <MoreHorizontal size={18} />
         </button>
       </DropdownMenuTrigger>

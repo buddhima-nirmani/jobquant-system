@@ -5,6 +5,8 @@ import { FileDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ClientSummary } from "@/lib/api";
+import { parseApiDate } from "@/lib/format";
+import { addPdfLetterhead } from "@/lib/pdf";
 
 export default function ExportClientsButton({
   clients,
@@ -21,15 +23,10 @@ export default function ExportClientsButton({
       const { autoTable } = await import("jspdf-autotable");
 
       const doc = new jsPDF();
-
-      doc.setFontSize(16);
-      doc.text("JobQuant — Registered Clients", 14, 18);
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 24);
+      const startY = await addPdfLetterhead(doc, "Registered Clients");
 
       autoTable(doc, {
-        startY: 30,
+        startY,
         head: [["Name", "Company", "Email", "Phone", "Active Jobs", "Status", "Joined"]],
         body: clients.map((client) => [
           client.name,
@@ -38,7 +35,7 @@ export default function ExportClientsButton({
           client.phone ?? "—",
           String(client.active_jobs),
           client.is_active ? "Active" : "Inactive",
-          new Date(client.created_at).toLocaleDateString(),
+          parseApiDate(client.created_at).toLocaleDateString(),
         ]),
         headStyles: { fillColor: [255, 107, 0] },
         styles: { fontSize: 9 },

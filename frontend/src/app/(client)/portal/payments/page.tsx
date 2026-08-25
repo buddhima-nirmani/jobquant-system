@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 
 import PageHeader from "@/components/layouts/PageHeader";
+import LoadingState from "@/components/ui/LoadingState";
 
 import ClientPaymentSummaryCards from "@/components/payments/ClientPaymentSummaryCards";
 import ClientPaymentsTable from "@/components/payments/ClientPaymentsTable";
 
-import { PaymentResponse, listPayments } from "@/lib/api";
+import { PaymentResponse, getClientDashboard, listPayments } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
-import { formatLKR } from "@/lib/currency";
+import { formatCurrency } from "@/lib/format";
 
 export default function ClientPaymentsPage() {
   const [payments, setPayments] = useState<PaymentResponse[]>([]);
+  const [outstanding, setOutstanding] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,8 +23,11 @@ export default function ClientPaymentsPage() {
 
   function refetch() {
     setLoading(true);
-    listPayments()
-      .then(setPayments)
+    Promise.all([listPayments(), getClientDashboard()])
+      .then(([paymentsData, dashboard]) => {
+        setPayments(paymentsData);
+        setOutstanding(dashboard.outstanding_payments);
+      })
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Unable to load payments.")
       )
@@ -40,7 +45,6 @@ export default function ClientPaymentsPage() {
 
   const verified = payments.filter((p) => p.status === "Verified");
   const pending = payments.filter((p) => p.status === "Pending");
-  const outstanding = pending.reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="space-y-8">
@@ -54,7 +58,7 @@ export default function ClientPaymentsPage() {
           totalInvoices: payments.length,
           pendingPayments: pending.length,
           verifiedPayments: verified.length,
-          outstandingBalance: formatLKR(outstanding),
+          outstandingBalance: formatCurrency(outstanding),
         }}
       />
 
@@ -79,7 +83,7 @@ export default function ClientPaymentsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading payments...</p>
+        <LoadingState label="Loading payments..." />
       ) : (
         <ClientPaymentsTable
           payments={filtered}

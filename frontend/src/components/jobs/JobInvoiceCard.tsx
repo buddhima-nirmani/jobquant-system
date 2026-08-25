@@ -6,16 +6,19 @@ import { Download, FileUp, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingState from "@/components/ui/LoadingState";
 import { useToast } from "@/components/ui/toast";
 
 import {
   InvoiceResponse,
   deleteInvoice,
+  downloadAuthenticatedFile,
   invoiceFileUrl,
   listInvoices,
   uploadInvoice,
 } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
+import { parseApiDate } from "@/lib/format";
 
 export default function JobInvoiceCard({
   jobId,
@@ -75,6 +78,17 @@ export default function JobInvoiceCard({
     }
   }
 
+  async function handleDownload(invoice: InvoiceResponse) {
+    try {
+      await downloadAuthenticatedFile(
+        invoiceFileUrl(invoice.id),
+        `invoice-${invoice.id}`
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Unable to download invoice.", "error");
+    }
+  }
+
   return (
     <Card className="rounded-2xl border border-[#EAEAEA] shadow-sm">
       <CardContent className="p-6">
@@ -104,7 +118,7 @@ export default function JobInvoiceCard({
         </div>
 
         {loading && (
-          <p className="mt-4 text-sm text-[#94A3B8]">Loading invoices...</p>
+          <LoadingState label="Loading invoices..." className="mt-4" />
         )}
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
@@ -125,19 +139,18 @@ export default function JobInvoiceCard({
                   Uploaded by {invoice.uploaded_by_name}
                 </p>
                 <p className="text-xs text-[#94A3B8]">
-                  {new Date(invoice.uploaded_at).toLocaleString()}
+                  {parseApiDate(invoice.uploaded_at).toLocaleString()}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <a
-                  href={invoiceFileUrl(invoice.id)}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => handleDownload(invoice)}
                   className="inline-flex items-center gap-1 font-medium text-[#FF6B00] hover:underline"
                 >
                   <Download size={14} /> Download
-                </a>
+                </button>
 
                 {currentUserId === invoice.uploaded_by && (
                   <ConfirmDialog

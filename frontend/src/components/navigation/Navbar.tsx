@@ -6,6 +6,7 @@ import {
   Bell,
   ChevronDown,
   CircleHelp,
+  Menu,
 } from "lucide-react";
 
 import GlobalSearch from "@/components/navbar/GlobalSearch";
@@ -17,6 +18,7 @@ import { unreadNotificationCount } from "@/lib/api";
 type NavbarProps = {
   role: "admin" | "staff" | "client";
   userName: string;
+  onMenuClick: () => void;
 };
 
 const roleNames = {
@@ -28,6 +30,7 @@ const roleNames = {
 export default function Navbar({
   role,
   userName,
+  onMenuClick,
 }: NavbarProps) {
   const [hasUnread, setHasUnread] = useState(false);
 
@@ -42,12 +45,23 @@ export default function Navbar({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 h-24 border-b border-[#EAEAEA] bg-white">
-      <div className="flex h-full items-center justify-between px-10">
+    <header className="sticky top-0 z-30 h-16 border-b border-[#EAEAEA] bg-white sm:h-20 lg:h-24">
+      <div className="flex h-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
 
-        <GlobalSearch role={role} />
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8] lg:hidden"
+        >
+          <Menu size={18} className="text-[#64748B]" />
+        </button>
 
-        <div className="flex items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <GlobalSearch role={role} />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
 
           {/* Help */}
 
@@ -56,7 +70,7 @@ export default function Navbar({
             <button
               title="Help"
               aria-label="Help"
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8]"
+              className="hidden h-11 w-11 items-center justify-center rounded-xl border border-[#E5E7EB] transition hover:bg-[#FFF2E8] sm:flex"
             >
               <CircleHelp
                 size={18}
@@ -92,13 +106,13 @@ export default function Navbar({
 
           <ProfileDropdown role={role}>
 
-            <button className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] px-3 py-2 transition hover:bg-[#FAFAFA]">
+            <button className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] px-2 py-2 transition hover:bg-[#FAFAFA] sm:px-3">
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF2E8] font-semibold text-[#FF6B00]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF2E8] font-semibold text-[#FF6B00]">
                 {userName.charAt(0)}
               </div>
 
-              <div className="text-left">
+              <div className="hidden text-left md:block">
 
                 <p className="text-sm font-semibold text-[#0F172A]">
                   {userName}
@@ -112,7 +126,7 @@ export default function Navbar({
 
               <ChevronDown
                 size={18}
-                className="text-[#94A3B8]"
+                className="hidden text-[#94A3B8] md:block"
               />
 
             </button>

@@ -27,7 +27,7 @@ interface RecentActivityProps {
   viewAllHref?: string;
 }
 
-const icons = {
+export const activityIcons = {
   job: ClipboardCheck,
   payment: CreditCard,
   client: UserPlus,
@@ -35,6 +35,8 @@ const icons = {
   design: ImagePlus,
   invoice: FileText,
 };
+
+const icons = activityIcons;
 
 export default function RecentActivity({
   activities,

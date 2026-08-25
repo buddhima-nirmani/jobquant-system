@@ -47,6 +47,7 @@ def _to_comment_response(comment: DesignComment, current_user: User) -> DesignCo
         user_role=comment.user.role,
         comment=comment.comment,
         is_revision_request=comment.is_revision_request,
+        parent_id=comment.parent_id,
         created_at=comment.created_at,
         updated_at=comment.updated_at,
         can_edit=can_edit,
@@ -57,7 +58,7 @@ def _to_comment_response(comment: DesignComment, current_user: User) -> DesignCo
 def _notify_job_team(db: Session, job: Job, notif_type: str, title: str, link: str) -> None:
     recipients = {job.assigned_staff_id, job.created_by} - {None}
     for user_id in recipients:
-        notify(db, user_id, notif_type, title, link=link)
+        notify(db, user_id, notif_type, title, link=link, job_id=job.id)
 
 
 def _get_version(version_id: int, db: Session) -> DesignVersion:
@@ -137,8 +138,9 @@ def upload_design_version(
         db,
         job.client_id,
         "design",
-        f"New design version uploaded for {job.job_number}",
+        "New design version uploaded for {job_number}",
         link=f"/portal/orders/{job.id}",
+        job_id=job.id,
     )
 
     db.commit()
@@ -218,7 +220,7 @@ def approve_design(
         db,
         version.job,
         "design",
-        f"Client approved the design for {version.job.job_number}",
+        "Client approved the design for {job_number}",
         link=f"/staff/jobs/{version.job_id}",
     )
 
@@ -261,7 +263,7 @@ def request_revision(
         db,
         version.job,
         "design",
-        f"Revision requested on {version.job.job_number}",
+        "Revision requested on {job_number}",
         link=f"/staff/jobs/{version.job_id}",
     )
 
@@ -308,22 +310,51 @@ def add_comment(
     version = _get_version(version_id, db)
     check_job_access(version.job, current_user)
 
+    parent = None
+    if payload.parent_id is not None:
+        parent = (
+            db.query(DesignComment)
+            .options(joinedload(DesignComment.user))
+            .filter(
+                DesignComment.id == payload.parent_id,
+                DesignComment.design_version_id == version_id,
+            )
+            .first()
+        )
+        if not parent:
+            raise HTTPException(status_code=404, detail="Comment being replied to was not found.")
+
     comment = DesignComment(
         job_id=version.job_id,
         design_version_id=version.id,
         user_id=current_user.id,
         comment=payload.comment,
         is_revision_request=False,
+        parent_id=payload.parent_id,
     )
 
     db.add(comment)
+
+    if parent and parent.user_id != current_user.id:
+        notify(
+            db,
+            parent.user_id,
+            "design",
+            f"{current_user.name} replied to your comment on {{job_number}}",
+            link=(
+                f"/portal/orders/{version.job_id}"
+                if parent.user.role == "client"
+                else f"/staff/jobs/{version.job_id}"
+            ),
+            job_id=version.job_id,
+        )
 
     if current_user.role == "client":
         _notify_job_team(
             db,
             version.job,
             "design",
-            f"New comment on {version.job.job_number}",
+            "New comment on {job_number}",
             link=f"/staff/jobs/{version.job_id}",
         )
     else:
@@ -331,8 +362,9 @@ def add_comment(
             db,
             version.job.client_id,
             "design",
-            f"New comment on your order {version.job.job_number}",
+            "New comment on your order {job_number}",
             link=f"/portal/orders/{version.job_id}",
+            job_id=version.job_id,
         )
 
     db.commit()

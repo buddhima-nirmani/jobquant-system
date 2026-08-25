@@ -13,10 +13,13 @@ import {
   Phone,
   UserCog,
   Users,
+  X,
 } from "lucide-react";
 
 type SidebarProps = {
   role: "admin" | "staff" | "client";
+  open: boolean;
+  onClose: () => void;
 };
 
 const navigation = {
@@ -96,15 +99,29 @@ const portalTitles = {
   client: "CLIENT PORTAL",
 };
 
-export default function Sidebar({ role }: SidebarProps) {
+export default function Sidebar({ role, open, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-[#ECECEC] bg-white">
-      {/* Logo */}
+    <>
+      {/* Mobile/tablet backdrop */}
+      {open && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        />
+      )}
 
-      <div className="flex h-24 items-center border-b border-[#ECECEC] px-6">
-      <div className="flex items-center gap-3">
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-[250px] flex-col border-r border-[#ECECEC] bg-white transition-transform duration-200 ease-out lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Logo */}
+
+        <div className="flex h-20 items-center justify-between border-b border-[#ECECEC] px-6 lg:h-24">
+        <div className="flex items-center gap-3">
 
 <Image
   src="/jobquant-icon.png"
@@ -128,7 +145,16 @@ export default function Sidebar({ role }: SidebarProps) {
 </div>
 
 </div>
-      </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="rounded-lg p-1.5 text-[#94A3B8] hover:bg-[#F8FAFC] lg:hidden"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
       {/* Workspace */}
 
@@ -153,6 +179,7 @@ export default function Sidebar({ role }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={`flex h-11 items-center gap-3 rounded-xl px-4 text-sm font-medium transition-all ${
                 active
                   ? "bg-[#FFF2E8] text-[#FF6B00]"
@@ -198,7 +225,8 @@ export default function Sidebar({ role }: SidebarProps) {
             </div>
           </div>
         </div>
-      )}
-    </aside>
+        )}
+      </aside>
+    </>
   );
 }

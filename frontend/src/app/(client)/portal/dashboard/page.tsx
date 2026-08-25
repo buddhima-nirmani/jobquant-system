@@ -13,6 +13,7 @@ import PaymentSummaryCard from "@/components/cards/PaymentSummaryCard";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import RecentJobs from "@/components/dashboard/RecentJobs";
 import PageHeader from "@/components/layouts/PageHeader";
+import LoadingState from "@/components/ui/LoadingState";
 
 import {
   ClientDashboard,
@@ -45,7 +46,7 @@ export default function ClientDashboardPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-[#94A3B8]">Loading dashboard...</p>;
+    return <LoadingState label="Loading dashboard..." />;
   }
 
   if (error || !data) {
@@ -113,7 +114,7 @@ export default function ClientDashboardPage() {
 
       <PaymentSummaryCard
         outstandingAmount={formatCurrency(data.outstanding_payments)}
-        paidThisMonth="—"
+        paidThisMonth={formatCurrency(data.paid_this_month)}
         nextDueDate={upcomingDue?.due_date ?? "—"}
       />
     </div>

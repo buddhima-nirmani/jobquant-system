@@ -137,7 +137,11 @@ export default function PricingInformationSection() {
                   <p className="text-[#64748B]">
                     {item.productName || `Item ${index + 1}`}{" "}
                     <span className="text-[#94A3B8]">
-                      ({item.quantity} {item.unit})
+                      (Qty: {item.quantity || 0}
+                      {item.width && item.height
+                        ? `, ${item.width}x${item.height} ${item.unit}`
+                        : ""}
+                      )
                     </span>
                   </p>
 

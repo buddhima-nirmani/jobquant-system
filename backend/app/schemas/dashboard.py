@@ -54,3 +54,4 @@ class ClientDashboard(BaseModel):
     completed_orders: int
     pending_design_approvals: int
     outstanding_payments: float
+    paid_this_month: float

@@ -1,4 +1,4 @@
-import { API_URL, Role } from "@/lib/api";
+import { API_URL, Role, clearToken, getToken } from "@/lib/api";
 
 export type CurrentUser = {
   id: number;
@@ -11,9 +11,15 @@ export type CurrentUser = {
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  const token = getToken();
+
+  if (!token) {
+    return null;
+  }
+
   try {
     const response = await fetch(`${API_URL}/api/auth/me`, {
-      credentials: "include",
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
 
@@ -37,9 +43,10 @@ export async function logout(): Promise<void> {
   try {
     await fetch(`${API_URL}/api/auth/logout`, {
       method: "POST",
-      credentials: "include",
     });
   } finally {
+    clearToken();
+
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }

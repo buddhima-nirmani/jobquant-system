@@ -7,6 +7,7 @@ import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import PaymentsTable from "@/components/tables/PaymentsTable";
 
 import { Input } from "@/components/ui/input";
+import LoadingState from "@/components/ui/LoadingState";
 import {
   Select,
   SelectContent,
@@ -100,16 +101,16 @@ export default function PaymentsPage() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Input
           placeholder="Search by Job ID or Client..."
-          className="h-11 w-[320px]"
+          className="h-11 w-full sm:w-[320px]"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-11 w-[180px]">
+          <SelectTrigger className="h-11 w-full sm:w-[180px]">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
 
@@ -129,7 +130,7 @@ export default function PaymentsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-[#94A3B8]">Loading payments...</p>
+        <LoadingState label="Loading payments..." />
       ) : (
         <PaymentsTable
           payments={filtered}
