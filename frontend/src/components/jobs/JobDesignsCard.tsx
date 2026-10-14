@@ -26,6 +26,7 @@ import {
   addDesignComment,
   approveDesign,
   deleteDesignComment,
+  deleteDesignVersion,
   designFileUrl,
   editDesignComment,
   listDesignComments,
@@ -123,6 +124,19 @@ export default function JobDesignsCard({
       setIsUploading(false);
       setPendingFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeleteVersion(versionId: number) {
+    setActionError("");
+    try {
+      await deleteDesignVersion(versionId);
+      showToast("Design version deleted.");
+      await refetch();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Unable to delete design version."
+      );
     }
   }
 
@@ -399,7 +413,26 @@ export default function JobDesignsCard({
                 <p className="font-semibold text-[#0F172A]">
                   Version {version.version_number}
                 </p>
-                <StatusBadge status={version.status} />
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={version.status} />
+                  {canManage && version.status !== "Approved" && (
+                    <ConfirmDialog
+                      trigger={
+                        <button
+                          type="button"
+                          className="rounded p-1 hover:bg-red-50"
+                          aria-label="Delete design version"
+                        >
+                          <Trash2 size={14} className="text-red-500" />
+                        </button>
+                      }
+                      title="Delete this design version?"
+                      description="This cannot be undone. Once the client approves a version it can no longer be deleted."
+                      confirmLabel="Delete"
+                      onConfirm={() => handleDeleteVersion(version.id)}
+                    />
+                  )}
+                </div>
               </div>
 
               <p className="mt-1 text-xs text-[#94A3B8]">

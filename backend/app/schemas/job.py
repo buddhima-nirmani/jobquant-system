@@ -44,7 +44,7 @@ class JobCreate(BaseModel):
     job_type: str | None = None
 
     client_id: int
-    assigned_staff_id: int | None = None
+    assigned_staff_id: int
 
     order_date: date
     due_date: date | None = None

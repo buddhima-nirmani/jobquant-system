@@ -44,6 +44,37 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// FastAPI returns `detail` as a plain string for hand-raised HTTPExceptions,
+// but as an array of Pydantic error objects ({loc, msg, ...}) for request
+// validation failures (422s) — e.g. a missing/invalid field. `new Error(x)`
+// stringifies whatever it's given, and stringifying that array produces
+// "[object Object]" for each entry, so it has to be turned into readable
+// text here rather than passed through as-is.
+function errorMessageFromResponse(data: unknown): string {
+  const detail = (data as { detail?: unknown } | null)?.detail;
+
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    return detail
+      .map((entry) => {
+        if (entry && typeof entry === "object" && "msg" in entry) {
+          const e = entry as { msg: string; loc?: unknown[] };
+          const field = Array.isArray(e.loc) ? e.loc.at(-1) : undefined;
+          return field && typeof field === "string"
+            ? `${field}: ${e.msg}`
+            : e.msg;
+        }
+        return String(entry);
+      })
+      .join(" ");
+  }
+
+  return "Something went wrong.";
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -64,7 +95,7 @@ export async function apiRequest<T>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.detail || "Something went wrong.");
+    throw new Error(errorMessageFromResponse(data));
   }
 
   return data as T;
@@ -84,7 +115,7 @@ async function apiUpload<T>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.detail || "Something went wrong.");
+    throw new Error(errorMessageFromResponse(data));
   }
 
   return data as T;
@@ -505,6 +536,12 @@ export function designFileUrl(
   type: "original" | "watermarked"
 ) {
   return `${API_URL}/api/designs/${versionId}/file?type=${type}`;
+}
+
+export function deleteDesignVersion(versionId: number) {
+  return apiRequest<{ message: string }>(`/api/designs/${versionId}`, {
+    method: "DELETE",
+  });
 }
 
 export function approveDesign(versionId: number) {

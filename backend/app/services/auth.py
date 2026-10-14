@@ -4,17 +4,26 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import bcrypt
+from dotenv import load_dotenv
 from jose import jwt
 
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 def _load_or_create_secret_key() -> str:
-    """Reads SECRET_KEY from the environment (populated from backend/.env by
-    main.py's load_dotenv() call). If it's missing — e.g. a fresh checkout
-    with no .env yet — generates a random one and appends it to .env so it
-    stays the same across restarts; otherwise every server restart would
-    invalidate every existing login token."""
+    """Reads SECRET_KEY from backend/.env. Loads it directly here (rather
+    than trusting that whatever imported this module already called
+    load_dotenv(), e.g. main.py does) so that standalone scripts — seed
+    scripts, one-off shell commands, anything that imports this module
+    without going through the FastAPI app — see the same key instead of
+    each minting and appending a fresh one. load_dotenv() never overrides a
+    variable that's already set, so this is a no-op when main.py already
+    loaded it. If it's still missing — e.g. a fresh checkout with no .env
+    yet — generate a random one and append it to .env so it stays the same
+    across restarts; otherwise every server restart would invalidate every
+    existing login token."""
+
+    load_dotenv(ENV_FILE)
 
     existing = os.environ.get("SECRET_KEY")
     if existing:

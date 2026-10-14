@@ -198,6 +198,27 @@ def get_design_file(
     return FileResponse(resolve_path(relative_path))
 
 
+@router.delete("/api/designs/{version_id}")
+def delete_design_version(
+    version_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_or_admin),
+):
+    version = _get_version(version_id, db)
+    check_job_access(version.job, current_user)
+
+    if version.status == "Approved":
+        raise HTTPException(
+            status_code=403,
+            detail="This design version has already been approved by the client and can no longer be deleted.",
+        )
+
+    db.delete(version)
+    db.commit()
+
+    return {"message": "Design version deleted successfully."}
+
+
 @router.post("/api/designs/{version_id}/approve", response_model=DesignVersionResponse)
 def approve_design(
     version_id: int,

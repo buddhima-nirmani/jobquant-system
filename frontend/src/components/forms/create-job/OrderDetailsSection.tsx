@@ -64,7 +64,24 @@ export default function OrderDetailsSection() {
     setItems(updated);
   };
 
+  const itemError = (item: (typeof items)[number]): string | null => {
+    if (Number(item.width) <= 0) {
+      return "Width must be greater than 0.";
+    }
+    if (Number(item.height) <= 0) {
+      return "Height must be greater than 0.";
+    }
+    if (Number(item.quantity) <= 0) {
+      return "Quantity must be greater than 0.";
+    }
+    return null;
+  };
+
   const saveRow = (index: number) => {
+    if (itemError(items[index])) {
+      return;
+    }
+
     const updated = [...items];
 
     updated[index] = {
@@ -425,34 +442,48 @@ export default function OrderDetailsSection() {
               </div>
 
               {/* Save Item */}
-              <div className="mt-5 flex justify-end">
-                <Button
-                  type="button"
-                  onClick={() => saveRow(index)}
-                  disabled={
-                    item.saved ||
-                    !item.productCategory ||
-                    !item.productName ||
-                    !item.width ||
-                    !item.height ||
-                    !item.area ||
-                    !item.unit ||
-                    !item.quantity ||
-                    !item.material ||
-                    !item.specification ||
-                    !item.printType ||
-                    !item.lamination ||
-                    !item.installation
-                  }
-                  className="bg-[#FF6B00] hover:bg-[#E55F00] disabled:bg-[#FFB27A]"
-                >
-                  <Check size={17} className="mr-2" />
+              {(() => {
+                const allFieldsFilled =
+                  !!item.productCategory &&
+                  !!item.productName &&
+                  !!item.width &&
+                  !!item.height &&
+                  !!item.area &&
+                  !!item.unit &&
+                  !!item.quantity &&
+                  !!item.material &&
+                  !!item.specification &&
+                  !!item.printType &&
+                  !!item.lamination &&
+                  !!item.installation;
 
-                  {item.saved
-                    ? "Saved"
-                    : "Save Item"}
-                </Button>
-              </div>
+                const currentItemError = allFieldsFilled
+                  ? itemError(item)
+                  : null;
+
+                return (
+                  <div className="mt-5 space-y-2">
+                    {currentItemError && !item.saved && (
+                      <p className="text-right text-sm text-red-600">
+                        {currentItemError}
+                      </p>
+                    )}
+
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={() => saveRow(index)}
+                        disabled={item.saved || !allFieldsFilled || !!currentItemError}
+                        className="bg-[#FF6B00] hover:bg-[#E55F00] disabled:bg-[#FFB27A]"
+                      >
+                        <Check size={17} className="mr-2" />
+
+                        {item.saved ? "Saved" : "Save Item"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>

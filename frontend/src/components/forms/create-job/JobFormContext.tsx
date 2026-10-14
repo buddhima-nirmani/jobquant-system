@@ -236,22 +236,46 @@ export function JobFormProvider({ children }: { children: ReactNode }) {
   const submitJob = async (): Promise<JobDetail> => {
     setSubmitError("");
 
+    const fail = (message: string): never => {
+      setSubmitError(message);
+      throw new Error(message);
+    };
+
+    if (!jobNumber.trim()) {
+      fail("Please enter a Job ID.");
+    }
+
     if (!jobName.trim()) {
-      throw new Error("Job name is required.");
+      fail("Job name is required.");
+    }
+
+    if (!orderDate) {
+      fail("Order date is required.");
     }
 
     if (!clientId) {
-      throw new Error("Please select a client.");
+      fail("Please select a client.");
+    }
+
+    if (!assignedStaffId) {
+      fail("Please assign a staff member.");
     }
 
     const savedItems = items.filter((item) => item.saved);
+    const unsavedItems = items.filter((item) => !item.saved);
 
     if (savedItems.length === 0) {
-      throw new Error("Please save at least one order item.");
+      fail("Please save at least one order item.");
     }
 
-    if (transportation && !distance) {
-      throw new Error(
+    if (unsavedItems.length > 0) {
+      fail(
+        "You have an unsaved order item. Click \"Save Item\" before creating the job, or remove it."
+      );
+    }
+
+    if (transportation && (!distance || Number(distance) <= 0)) {
+      fail(
         "Transport distance is required when transportation is enabled."
       );
     }
@@ -259,11 +283,7 @@ export function JobFormProvider({ children }: { children: ReactNode }) {
     const finalCostValue = Number(finalCost);
 
     if (!finalCost || Number.isNaN(finalCostValue) || finalCostValue < 0) {
-      throw new Error("Please enter a valid Final Approved Cost.");
-    }
-
-    if (!jobNumber.trim()) {
-      throw new Error("Please enter a Job ID.");
+      fail("Please enter a valid Final Approved Cost.");
     }
 
     const payload: JobCreatePayload = {
@@ -271,7 +291,8 @@ export function JobFormProvider({ children }: { children: ReactNode }) {
       job_name: jobName.trim(),
       description: description.trim() || null,
       job_type: jobType.trim() || null,
-      client_id: clientId,
+      // Validated non-null above via fail("Please select a client.").
+      client_id: clientId as number,
       assigned_staff_id: assignedStaffId,
       order_date: orderDate,
       due_date: dueDate || null,
