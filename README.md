@@ -1,7 +1,5 @@
 # JobQuant
 
-![JobQuant](frontend/public/jobquant-icon.png)
-
 JobQuant is a web-based job management system for small-scale print and advertising businesses. It brings job tracking, design approvals, payments, invoices, and client communication into one role-based workspace, with machine-learning cost estimates for print jobs.
 
 ## Features
@@ -116,3 +114,25 @@ uvicorn app.main:app --reload
 - Cost predictions require `ml-model/models/jobquant_final_random_forest_model.pkl`, which is included in the repository.
 - SQLite and uploaded files are local by default. Back up or replace these storage choices before deploying for shared or production use.
 - Configure production CORS origins, secrets, email delivery, and persistent storage for your deployment environment.
+
+## User Interfaces
+
+### Landing Page
+
+<img width="1910" height="4131" alt="Client Landing Page" src="https://github.com/user-attachments/assets/5545c48b-4d2d-49d3-8f81-4d1c963dbe9d" />
+
+### Admin Dashboard
+
+<img width="1910" height="2260" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/2687d6ea-0e6d-44d7-a86a-417fb4306b0c" />
+
+### Job Creation Page
+
+<img width="1910" height="3522" alt="Staff Job Creation Page (Before Creating a job)" src="https://github.com/user-attachments/assets/dbbb4ba0-45cf-49b3-9c3b-c46a0e4feac4" />
+
+### Staff Job Details Page
+
+<img width="1910" height="3462" alt="Staff Job Details Page" src="https://github.com/user-attachments/assets/0c37065a-5069-4296-af46-f7bc018afbe6" />
+
+### Client Job Details Page
+
+<img width="1910" height="3316" alt="Client Order Details Page" src="https://github.com/user-attachments/assets/b1dcbb8b-fa70-4aa1-8841-128fdda3c859" />
